@@ -922,7 +922,7 @@
 
   <div class="container">
     <header>
-      <h1><span class="emoji">🚀</span> Задачи</h1>
+      <h1><span class="emoji">🎬</span> Наш киновечер</h1>
       <div id="user-info" class="user-info">
         <div id="avatar" class="avatar">?</div>
         <span id="user-name" class="user-name">...</span>
@@ -933,7 +933,7 @@
       <div class="month-icon">🏆</div>
       <div class="month-info">
         <div class="month-value" id="stat-month">0</div>
-        <div class="month-label">закрыто в этом месяце</div>
+        <div class="month-label">Просмотрено в этом месяце</div>
         <div class="month-name" id="month-name">Загрузка...</div>
       </div>
     </div>
@@ -941,26 +941,26 @@
     <div class="stats">
       <div class="stat-card stat-active">
         <div class="stat-value" id="stat-active">0</div>
-        <div class="stat-label">🔥 активных</div>
+        <div class="stat-label">🍿 Фильмы</div>
       </div>
       <div class="stat-card stat-done">
         <div class="stat-value" id="stat-done">0</div>
-        <div class="stat-label">✅ готово</div>
+        <div class="stat-label">✅ Просмотрено</div>
       </div>
       <div class="stat-card stat-mine">
         <div class="stat-value" id="stat-mine">0</div>
-        <div class="stat-label">👤 моих</div>
+        <div class="stat-label">🎭  Сериалы</div>
       </div>
     </div>
     
     <div class="filters">
-      <button class="filter active" data-filter="active" onclick="setFilter('active')">🔥 Активные</button>
-      <button class="filter" data-filter="mine" onclick="setFilter('mine')">👤 Мои</button>
-      <button class="filter" data-filter="done" onclick="setFilter('done')">✅ Готово</button>
+      <button class="filter active" data-filter="active" onclick="setFilter('active')">🍿 Фильмы</button>
+      <button class="filter" data-filter="mine" onclick="setFilter('mine')">🎭  Сериалы</button>
+      <button class="filter" data-filter="done" onclick="setFilter('done')">✅ Просмотрено</button>
     </div>
     
     <div id="tasks" class="tasks">
-      <div class="loading">⏳ Ищем ваши задачи...</div>
+      <div class="loading">⏳ Ищем ваши фильмы...</div>
     </div>
   </div>
   
@@ -971,24 +971,24 @@
   
   <div id="edit-modal" class="modal">
     <div class="modal-content">
-      <h2 id="edit-title">✨ Новая задача</h2>
+      <h2 id="edit-title">✨ Предложить посмотреть</h2>
       
       <label>📂 Категория</label>
       <div class="category-switch">
         <button type="button" class="category-option active" data-value="active" onclick="selectCategory('active')">
-          🔥 Активные
+          🍿 Фильмы
         </button>
         <button type="button" class="category-option" data-value="mine" onclick="selectCategory('mine')">
-          👤 Мои
+          🎭 Сериалы
         </button>
       </div>
-      <div class="category-desc" id="category-desc">Общая задача для всей команды — все могут видеть и голосовать</div>
+      <div class="category-desc" id="category-desc">Фильм и сериал, который ты хочешь предложить — все члены могут видеть и голосовать</div>
       
-      <label>Название</label>
+      <label>Название фильма/сериала</label>
       <input id="task-input" type="text" placeholder="Что нужно сделать?" maxlength="150">
       
-      <label>💡 Почему это важно</label>
-      <textarea id="task-why" rows="3" placeholder="Обоснование, польза, контекст..." maxlength="1000"></textarea>
+      <label>💡 Почему стоит посмотреть</label>
+      <textarea id="task-why" rows="3" placeholder="Расскажи про что он и почему может зайти нам..." maxlength="1000"></textarea>
       
       <label>🔗 Ссылка (необязательно)</label>
       <input id="task-link" type="url" placeholder="https://..." maxlength="500">
