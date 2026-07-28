@@ -28,10 +28,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-    }
+    .container { max-width: 600px; margin: 0 auto; }
 
     header {
       display: flex;
@@ -40,16 +37,17 @@
       margin-bottom: 8px;
     }
 
-    h1 {
-      font-size: 24px;
-      font-weight: 700;
+    h1 { font-size: 24px; font-weight: 700; }
+
+    .user-badge {
+      font-size: 12px;
+      color: var(--hint);
+      padding: 4px 10px;
+      background: var(--card);
+      border-radius: 12px;
     }
 
-    .stats {
-      font-size: 13px;
-      color: var(--hint);
-      margin-bottom: 20px;
-    }
+    .stats { font-size: 13px; color: var(--hint); margin-bottom: 20px; }
 
     .filters {
       display: flex;
@@ -73,22 +71,21 @@
       white-space: nowrap;
     }
 
-    .filter.active {
-      background: var(--button);
-      color: var(--button-text);
-    }
+    .filter.active { background: var(--button); color: var(--button-text); }
 
-    .tasks {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    .tasks { display: flex; flex-direction: column; gap: 10px; }
 
     .empty {
       text-align: center;
       padding: 40px 20px;
       color: var(--hint);
       font-size: 15px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--hint);
     }
 
     .task {
@@ -108,67 +105,34 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .task.done {
-      opacity: 0.55;
-      border-left-color: #22c55e;
-    }
-
-    .task.hot:not(.done) {
-      border-left-color: #f97316;
-    }
+    .task.done { opacity: 0.55; border-left-color: #22c55e; }
+    .task.hot:not(.done) { border-left-color: #f97316; }
+    .task.mine { border-left-color: #a855f7; }
 
     .check {
-      width: 26px;
-      height: 26px;
-      min-width: 26px;
+      width: 26px; height: 26px; min-width: 26px;
       border-radius: 50%;
       border: 2px solid var(--hint);
       background: transparent;
       color: white;
       cursor: pointer;
       font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       transition: all 0.2s;
     }
 
-    .check.done {
-      background: #22c55e;
-      border-color: #22c55e;
-    }
+    .check.done { background: #22c55e; border-color: #22c55e; }
 
-    .task-body {
-      flex: 1;
-      min-width: 0;
-    }
+    .task-body { flex: 1; min-width: 0; }
+    .task-title { font-size: 15px; font-weight: 500; word-wrap: break-word; }
+    .task-title.strike { text-decoration: line-through; }
+    .task-meta { font-size: 11px; color: var(--hint); margin-top: 4px; }
 
-    .task-title {
-      font-size: 15px;
-      font-weight: 500;
-      word-wrap: break-word;
-    }
-
-    .task-title.strike {
-      text-decoration: line-through;
-    }
-
-    .task-meta {
-      font-size: 11px;
-      color: var(--hint);
-      margin-top: 4px;
-    }
-
-    .fire {
-      display: inline-block;
-      margin-right: 4px;
-    }
+    .fire { display: inline-block; margin-right: 4px; }
 
     .vote {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       min-width: 52px;
       padding: 6px 10px;
       border-radius: 12px;
@@ -180,21 +144,9 @@
       transition: all 0.15s;
     }
 
-    .vote:active {
-      transform: scale(0.94);
-    }
-
-    .vote.voted {
-      background: var(--button);
-      color: var(--button-text);
-      border-color: var(--button);
-    }
-
-    .vote-count {
-      font-weight: 700;
-      font-size: 14px;
-      margin-top: 2px;
-    }
+    .vote:active { transform: scale(0.94); }
+    .vote.voted { background: var(--button); color: var(--button-text); border-color: var(--button); }
+    .vote-count { font-weight: 700; font-size: 14px; margin-top: 2px; }
 
     .add-btn {
       position: fixed;
@@ -213,9 +165,7 @@
       z-index: 50;
     }
 
-    .add-btn:active {
-      transform: translateX(-50%) scale(0.96);
-    }
+    .add-btn:active { transform: translateX(-50%) scale(0.96); }
 
     .modal {
       display: none;
@@ -227,14 +177,10 @@
       z-index: 100;
     }
 
-    .modal.active {
-      display: flex;
-      animation: fadeIn 0.2s ease;
-    }
+    .modal.active { display: flex; animation: fadeIn 0.2s ease; }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from { opacity: 0; } to { opacity: 1; }
     }
 
     .modal-content {
@@ -247,14 +193,10 @@
     }
 
     @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
+      from { transform: translateY(100%); } to { transform: translateY(0); }
     }
 
-    .modal h2 {
-      margin-bottom: 16px;
-      font-size: 20px;
-    }
+    .modal h2 { margin-bottom: 16px; font-size: 20px; }
 
     .modal input, .modal textarea {
       width: 100%;
@@ -270,14 +212,10 @@
     }
 
     .modal input:focus, .modal textarea:focus {
-      outline: none;
-      border-color: var(--button);
+      outline: none; border-color: var(--button);
     }
 
-    .modal-buttons {
-      display: flex;
-      gap: 10px;
-    }
+    .modal-buttons { display: flex; gap: 10px; }
 
     .modal-buttons button {
       flex: 1;
@@ -289,19 +227,17 @@
       cursor: pointer;
     }
 
-    .btn-cancel {
-      background: var(--card);
-      color: var(--text);
-    }
-
-    .btn-save {
-      background: var(--button);
-      color: var(--button-text);
-    }
-
-    .btn-save:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .btn-cancel { background: var(--card); color: var(--text); }
+    .btn-save { background: var(--button); color: var(--button-text); }
+    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .delete-btn {
+      background: transparent;
+      border: none;
+      color: var(--hint);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px 8px;
     }
   </style>
 </head>
@@ -309,21 +245,25 @@
 
   <div class="container">
     <header>
-      <h1>Семейный киновечер</h1>
+      <h1>🎯 Задачи команды</h1>
+      <div id="user-badge" class="user-badge">Загрузка...</div>
     </header>
     <div id="stats" class="stats"></div>
     
     <div class="filters">
       <button class="filter active" data-filter="all" onclick="setFilter('all')">Все</button>
-      <button class="filter" data-filter="active" onclick="setFilter('active')">Фильмы</button>
-      <button class="filter" data-filter="done" onclick="setFilter('done')">Сериалы</button>
+      <button class="filter" data-filter="active" onclick="setFilter('active')">🔥 Активные</button>
+      <button class="filter" data-filter="mine" onclick="setFilter('mine')">👤 Мои</button>
+      <button class="filter" data-filter="done" onclick="setFilter('done')">✅ Готово</button>
       <button class="filter" data-filter="top" onclick="setFilter('top')">⭐ Топ</button>
     </div>
     
-    <div id="tasks" class="tasks"></div>
+    <div id="tasks" class="tasks">
+      <div class="loading">⏳ Загрузка задач...</div>
+    </div>
   </div>
   
-  <button class="add-btn" onclick="openModal()">➕ Предложить фильм</button>
+  <button class="add-btn" onclick="openModal()">➕ Предложить задачу</button>
   
   <div id="modal" class="modal">
     <div class="modal-content">
@@ -337,18 +277,42 @@
     </div>
   </div>
 
-  <script>
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // ⚠️ ВСТАВЬТЕ СЮДА ВАШ КОНФИГ ИЗ FIREBASE ⚠️
+const firebaseConfig = {
+  apiKey: "AIzaSyAyQfQD8aRxLKhEtIcq4QzKjCLmJgQXlVc",
+  authDomain: "miniappvolkov.firebaseapp.com",
+  databaseURL: "https://miniappvolkov-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "miniappvolkov",
+  storageBucket: "miniappvolkov.firebasestorage.app",
+  messagingSenderId: "798881767507",
+  appId: "1:798881767507:web:4d9061ef9beb42d607a6a6"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const tasksRef = ref(db, 'tasks');
+
+    // Telegram
     const tg = window.Telegram?.WebApp;
     const user = tg?.initDataUnsafe?.user;
-    const userId = user?.id || 'anonymous';
-    const userName = user?.first_name || 'Аноним';
+    const userId = String(user?.id || 'test_' + Date.now());
+    const userName = user?.first_name || (user?.username ? '@' + user.username : 'Гость');
+    const userFullName = [user?.first_name, user?.last_name].filter(Boolean).join(' ') || userName;
 
-    if (tg) {
-      tg.ready();
-      tg.expand();
-    }
+    if (tg) { tg.ready(); tg.expand(); }
 
-    // Утилита haptic
+    // Показываем имя пользователя
+    document.getElementById('user-badge').textContent = '👤 ' + userName;
+
+    // Глобальные переменные
+    let tasks = [];
+    let currentFilter = 'all';
+
     function haptic(type = 'light') {
       try {
         if (type === 'success') tg?.HapticFeedback?.notificationOccurred('success');
@@ -356,32 +320,33 @@
       } catch(e) {}
     }
 
-    // Данные (в localStorage)
-    let tasks = JSON.parse(localStorage.getItem('tasks_v1')) || [
-      { id: 1, title: 'Обновить документацию проекта', desc: 'Актуализировать разделы про API', votes: 5, voters: [], done: false, author: 'Иван' },
-      { id: 2, title: 'Пофиксить баг с логином', desc: '', votes: 3, voters: [], done: false, author: 'Мария' },
-      { id: 3, title: 'Провести ретроспективу', desc: 'Итоги спринта', votes: 8, voters: [], done: true, author: 'Пётр' }
-    ];
-    let currentFilter = 'all';
+    // Слушаем изменения в Firebase (в реальном времени!)
+    onValue(tasksRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      tasks = Object.entries(data).map(([id, task]) => ({
+        id,
+        ...task,
+        voters: task.voters || {},
+        votes: task.voters ? Object.keys(task.voters).length : 0
+      }));
+      render();
+    });
 
-    function save() {
-      localStorage.setItem('tasks_v1', JSON.stringify(tasks));
-    }
-
-    function setFilter(f) {
+    window.setFilter = function(f) {
       currentFilter = f;
       document.querySelectorAll('.filter').forEach(b => {
         b.classList.toggle('active', b.dataset.filter === f);
       });
       haptic('light');
       render();
-    }
+    };
 
     function getFiltered() {
       let list = [...tasks];
       if (currentFilter === 'active') list = list.filter(t => !t.done);
       else if (currentFilter === 'done') list = list.filter(t => t.done);
       else if (currentFilter === 'top') list = list.filter(t => !t.done && t.votes >= 5);
+      else if (currentFilter === 'mine') list = list.filter(t => t.authorId === userId);
       list.sort((a, b) => {
         if (a.done !== b.done) return a.done ? 1 : -1;
         return b.votes - a.votes;
@@ -395,8 +360,9 @@
       const stats = document.getElementById('stats');
       const active = tasks.filter(t => !t.done).length;
       const done = tasks.filter(t => t.done).length;
-      stats.textContent = `Активных: ${active} · Выполнено: ${done}`;
-      
+      const mine = tasks.filter(t => t.authorId === userId).length;
+      stats.textContent = `Активных: ${active} · Выполнено: ${done} · Моих: ${mine}`;
+
       container.innerHTML = '';
       
       if (list.length === 0) {
@@ -405,12 +371,13 @@
       }
       
       list.forEach(task => {
-        const isVoted = task.voters.includes(userId);
+        const isVoted = task.voters && task.voters[userId];
         const isHot = task.votes >= 5 && !task.done;
+        const isMine = task.authorId === userId;
         const div = document.createElement('div');
-        div.className = 'task' + (task.done ? ' done' : '') + (isHot ? ' hot' : '');
+        div.className = 'task' + (task.done ? ' done' : '') + (isHot ? ' hot' : '') + (isMine && !task.done && !isHot ? ' mine' : '');
         div.innerHTML = `
-          <button class="check ${task.done ? 'done' : ''}" onclick="toggleDone(${task.id})">
+          <button class="check ${task.done ? 'done' : ''}" data-id="${task.id}">
             ${task.done ? '✓' : ''}
           </button>
           <div class="task-body">
@@ -418,92 +385,102 @@
               ${isHot ? '<span class="fire">🔥</span>' : ''}${escapeHtml(task.title)}
             </div>
             ${task.desc ? `<div class="task-meta">${escapeHtml(task.desc)}</div>` : ''}
-            <div class="task-meta">от ${escapeHtml(task.author)}</div>
+            <div class="task-meta">от ${escapeHtml(task.author)}${isMine ? ' (вы)' : ''}</div>
           </div>
-          <button class="vote ${isVoted ? 'voted' : ''}" onclick="vote(${task.id})">
+          <button class="vote ${isVoted ? 'voted' : ''}" data-id="${task.id}">
             👍
             <span class="vote-count">${task.votes}</span>
           </button>
+          ${isMine ? `<button class="delete-btn" data-id="${task.id}" data-action="delete">🗑</button>` : ''}
         `;
         container.appendChild(div);
+      });
+
+      // Обработчики
+      container.querySelectorAll('.vote').forEach(el => {
+        el.onclick = () => vote(el.dataset.id);
+      });
+      container.querySelectorAll('.check').forEach(el => {
+        el.onclick = () => toggleDone(el.dataset.id);
+      });
+      container.querySelectorAll('[data-action="delete"]').forEach(el => {
+        el.onclick = () => deleteTask(el.dataset.id);
       });
     }
 
     function escapeHtml(str) {
       const div = document.createElement('div');
-      div.textContent = str;
+      div.textContent = str || '';
       return div.innerHTML;
     }
 
-    function vote(id) {
+    async function vote(id) {
       const task = tasks.find(t => t.id === id);
       if (!task) return;
-      const idx = task.voters.indexOf(userId);
-      if (idx >= 0) {
-        task.voters.splice(idx, 1);
-        task.votes--;
-      } else {
-        task.voters.push(userId);
-        task.votes++;
-      }
+      const voters = { ...(task.voters || {}) };
+      if (voters[userId]) delete voters[userId];
+      else voters[userId] = true;
       haptic('light');
-      save();
-      render();
+      await update(ref(db, `tasks/${id}`), { voters });
     }
 
-    function toggleDone(id) {
+    async function toggleDone(id) {
       const task = tasks.find(t => t.id === id);
       if (!task) return;
-      task.done = !task.done;
       haptic('success');
-      save();
-      render();
+      await update(ref(db, `tasks/${id}`), { 
+        done: !task.done,
+        doneBy: !task.done ? userName : null
+      });
     }
 
-    function openModal() {
+    async function deleteTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      if (!confirm('Удалить задачу «' + task.title + '»?')) return;
+      haptic('light');
+      await remove(ref(db, `tasks/${id}`));
+    }
+
+    window.openModal = function() {
       document.getElementById('modal').classList.add('active');
       setTimeout(() => document.getElementById('task-input').focus(), 100);
-    }
+    };
 
-    function closeModal() {
+    window.closeModal = function() {
       document.getElementById('modal').classList.remove('active');
       document.getElementById('task-input').value = '';
       document.getElementById('task-desc').value = '';
-    }
+    };
 
-    function addTask() {
+    window.addTask = async function() {
       const input = document.getElementById('task-input');
       const desc = document.getElementById('task-desc');
       const title = input.value.trim();
       if (!title) return;
       
       const newTask = {
-        id: Date.now(),
         title: title,
         desc: desc.value.trim(),
-        votes: 1,
-        voters: [userId],
+        voters: { [userId]: true },
         done: false,
-        author: userName
+        author: userName,
+        authorId: userId,
+        createdAt: Date.now()
       };
-      tasks.unshift(newTask);
-      save();
-      render();
-      closeModal();
+      
       haptic('success');
-    }
+      await push(tasksRef, newTask);
+      closeModal();
+    };
 
-    // Закрыть модалку по клику на затемнение
     document.getElementById('modal').addEventListener('click', (e) => {
       if (e.target.id === 'modal') closeModal();
     });
 
-    // Enter в поле → добавить
     document.getElementById('task-input').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') addTask();
     });
-
-    render();
   </script>
 
 </body>
