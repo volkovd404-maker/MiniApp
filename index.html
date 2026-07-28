@@ -9,7 +9,6 @@
   
   <style>
     :root {
-      /* Aviasales-палитра */
       --brand: #00ADE6;
       --brand-dark: #0099CC;
       --brand-light: #E6F7FD;
@@ -19,7 +18,6 @@
       --accent-pink: #FF5A87;
       --accent-purple: #7C5CFF;
       
-      /* Фон и текст */
       --bg-start: #FFF5E6;
       --bg-end: #FFEBD1;
       --card: #FFFFFF;
@@ -29,7 +27,6 @@
       --hint: #8B95A5;
       --border: #F0E6D6;
       
-      /* Тени */
       --shadow-sm: 0 2px 8px rgba(255, 109, 0, 0.08);
       --shadow-md: 0 8px 24px rgba(255, 109, 0, 0.12);
       --shadow-lg: 0 12px 40px rgba(0, 173, 230, 0.25);
@@ -53,7 +50,6 @@
 
     .container { max-width: 600px; margin: 0 auto; }
 
-    /* Заголовок */
     header {
       display: flex;
       align-items: center;
@@ -74,7 +70,6 @@
       transform: rotate(-8deg);
     }
 
-    /* Плашка пользователя */
     .user-info {
       display: flex;
       align-items: center;
@@ -110,7 +105,6 @@
       white-space: nowrap;
     }
 
-    /* Карточка "Этот месяц" */
     .month-card {
       background: linear-gradient(135deg, #00ADE6 0%, #7C5CFF 100%);
       padding: 16px 18px;
@@ -161,10 +155,7 @@
       z-index: 1;
     }
 
-    .month-info {
-      flex: 1;
-      z-index: 1;
-    }
+    .month-info { flex: 1; z-index: 1; }
 
     .month-value {
       font-size: 28px;
@@ -188,7 +179,6 @@
       font-weight: 500;
     }
 
-    /* Статистика */
     .stats {
       display: flex;
       gap: 10px;
@@ -222,7 +212,6 @@
     .stat-done .stat-value { color: var(--accent-mint); }
     .stat-mine .stat-value { color: var(--accent-purple); }
 
-    /* Фильтры */
     .filters {
       display: flex;
       gap: 8px;
@@ -256,7 +245,6 @@
       box-shadow: 0 4px 12px rgba(0, 173, 230, 0.35);
     }
 
-    /* Список задач */
     .tasks { display: flex; flex-direction: column; gap: 12px; }
 
     .empty, .loading {
@@ -297,7 +285,7 @@
       top: 0;
       bottom: 0;
       width: 6px;
-      background: var(--brand);
+      background: var(--accent-orange);
       border-radius: 3px 0 0 3px;
     }
 
@@ -314,12 +302,12 @@
     }
     .task.done::before { background: var(--accent-mint); }
     
-    .task.hot:not(.done)::before { 
-      background: linear-gradient(180deg, var(--accent-orange), var(--accent-yellow));
+    .task.category-mine:not(.done)::before { 
+      background: var(--accent-purple);
     }
     
-    .task.mine:not(.done)::before { 
-      background: var(--accent-purple);
+    .task.hot:not(.done)::before { 
+      background: linear-gradient(180deg, var(--accent-orange), var(--accent-yellow));
     }
 
     .check {
@@ -342,6 +330,17 @@
       background: var(--accent-mint); 
       border-color: var(--accent-mint);
       box-shadow: 0 2px 8px rgba(78, 205, 196, 0.4);
+    }
+
+    /* Миниатюра превью в карточке */
+    .task-thumb {
+      width: 52px;
+      height: 52px;
+      min-width: 52px;
+      border-radius: 12px;
+      background: #F0F0F0 center/cover no-repeat;
+      flex-shrink: 0;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
     }
 
     .task-body { flex: 1; min-width: 0; }
@@ -381,13 +380,15 @@
       font-size: 11px;
     }
 
-    .badge-author {
-      font-weight: 500;
+    .badge-category-mine {
+      background: rgba(124, 92, 255, 0.12);
+      color: var(--accent-purple);
     }
+
+    .badge-author { font-weight: 500; }
 
     .fire { display: inline-block; margin-right: 4px; }
 
-    /* Кнопка голоса */
     .vote {
       display: flex; 
       flex-direction: column;
@@ -425,7 +426,6 @@
       line-height: 1;
     }
 
-    /* Кнопка добавления */
     .add-btn {
       position: fixed;
       bottom: 20px;
@@ -462,7 +462,6 @@
       line-height: 1;
     }
 
-    /* Модалки */
     .modal {
       display: none;
       position: fixed;
@@ -490,6 +489,7 @@
       overflow-y: auto;
       animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
+      touch-action: pan-y;
     }
 
     .modal-content::before {
@@ -504,8 +504,18 @@
       border-radius: 2px;
     }
 
+    .modal-content.dragging { transition: none !important; }
+
     @keyframes slideUp {
       from { transform: translateY(100%); } to { transform: translateY(0); }
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(0); } to { transform: translateY(100%); }
+    }
+
+    .modal-content.closing {
+      animation: slideDown 0.3s ease forwards;
     }
 
     .modal h2 { 
@@ -545,6 +555,145 @@
       border-color: var(--brand);
     }
 
+    /* Превью ссылки в форме */
+    .link-preview {
+      margin-top: -8px;
+      margin-bottom: 16px;
+      background: white;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      animation: slideIn 0.3s ease;
+      display: none;
+    }
+
+    .link-preview.active { display: block; }
+
+    .link-preview.loading {
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--hint);
+    }
+
+    .link-preview-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--brand);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .link-preview-image {
+      width: 100%;
+      max-height: 180px;
+      object-fit: cover;
+      display: block;
+      background: #F0F0F0;
+    }
+
+    .link-preview-body {
+      padding: 12px 14px;
+    }
+
+    .link-preview-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .link-preview-desc {
+      font-size: 12px;
+      color: var(--text-soft);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .link-preview-domain {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--hint);
+      margin-top: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .link-preview-domain img {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+
+    .link-preview-error {
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--hint);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .category-switch {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      background: #F1F3F5;
+      padding: 4px;
+      border-radius: 14px;
+    }
+
+    .category-option {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-soft);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .category-option:active { transform: scale(0.97); }
+
+    .category-option.active {
+      background: white;
+      color: var(--text);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .category-option.active[data-value="active"] { color: var(--accent-orange); }
+    .category-option.active[data-value="mine"] { color: var(--accent-purple); }
+
+    .category-desc {
+      font-size: 12px;
+      color: var(--hint);
+      margin: -8px 0 16px;
+      padding: 0 4px;
+    }
+
     .modal-buttons { display: flex; gap: 10px; margin-top: 10px; }
 
     .modal-buttons button {
@@ -577,7 +726,29 @@
       box-shadow: 0 4px 12px rgba(255, 90, 135, 0.3);
     }
 
-    /* Детальный просмотр */
+    .btn-done-big {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: none;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent-mint), #2CA89E);
+      color: white;
+      box-shadow: 0 4px 14px rgba(78, 205, 196, 0.4);
+      transition: transform 0.15s;
+      margin-top: 10px;
+    }
+
+    .btn-done-big.reopen {
+      background: #F1F3F5;
+      color: var(--text);
+      box-shadow: none;
+    }
+
+    .btn-done-big:active { transform: scale(0.98); }
+
     .detail-info {
       display: flex;
       flex-wrap: wrap;
@@ -608,9 +779,7 @@
       margin-bottom: 20px;
     }
 
-    .detail-votes-info {
-      font-size: 14px;
-    }
+    .detail-votes-info { font-size: 14px; }
 
     .detail-votes-count {
       font-size: 28px;
@@ -673,6 +842,63 @@
       color: var(--text);
     }
 
+    /* Крупное превью в детальном просмотре */
+    .detail-link-card {
+      background: white;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    .detail-link-card:active { transform: scale(0.98); }
+
+    .detail-link-image {
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      display: block;
+      background: #F0F0F0;
+    }
+
+    .detail-link-body {
+      padding: 14px 16px;
+    }
+
+    .detail-link-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      line-height: 1.35;
+    }
+
+    .detail-link-desc {
+      font-size: 13px;
+      color: var(--text-soft);
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+
+    .detail-link-url {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--brand);
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .detail-link-url img {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+
+    /* Fallback ссылка */
     .detail-link {
       display: inline-flex;
       align-items: center;
@@ -703,7 +929,6 @@
       </div>
     </header>
     
-    <!-- Карточка "Этот месяц" -->
     <div class="month-card">
       <div class="month-icon">🏆</div>
       <div class="month-info">
@@ -716,11 +941,11 @@
     <div class="stats">
       <div class="stat-card stat-active">
         <div class="stat-value" id="stat-active">0</div>
-        <div class="stat-label">🔥 в работе</div>
+        <div class="stat-label">🔥 активных</div>
       </div>
       <div class="stat-card stat-done">
         <div class="stat-value" id="stat-done">0</div>
-        <div class="stat-label">✅ всего</div>
+        <div class="stat-label">✅ готово</div>
       </div>
       <div class="stat-card stat-mine">
         <div class="stat-value" id="stat-mine">0</div>
@@ -729,11 +954,9 @@
     </div>
     
     <div class="filters">
-      <button class="filter active" data-filter="all" onclick="setFilter('all')">Все</button>
-      <button class="filter" data-filter="active" onclick="setFilter('active')">Фильмы</button>
-      <button class="filter" data-filter="mine" onclick="setFilter('mine')">Сериалы</button>
+      <button class="filter active" data-filter="active" onclick="setFilter('active')">🔥 Активные</button>
+      <button class="filter" data-filter="mine" onclick="setFilter('mine')">👤 Мои</button>
       <button class="filter" data-filter="done" onclick="setFilter('done')">✅ Готово</button>
-      <button class="filter" data-filter="top" onclick="setFilter('top')">⭐ Топ</button>
     </div>
     
     <div id="tasks" class="tasks">
@@ -746,10 +969,20 @@
     Новая задача
   </button>
   
-  <!-- Модалка добавления/редактирования -->
   <div id="edit-modal" class="modal">
     <div class="modal-content">
       <h2 id="edit-title">✨ Новая задача</h2>
+      
+      <label>📂 Категория</label>
+      <div class="category-switch">
+        <button type="button" class="category-option active" data-value="active" onclick="selectCategory('active')">
+          🔥 Активные
+        </button>
+        <button type="button" class="category-option" data-value="mine" onclick="selectCategory('mine')">
+          👤 Мои
+        </button>
+      </div>
+      <div class="category-desc" id="category-desc">Общая задача для всей команды — все могут видеть и голосовать</div>
       
       <label>Название</label>
       <input id="task-input" type="text" placeholder="Что нужно сделать?" maxlength="150">
@@ -760,6 +993,9 @@
       <label>🔗 Ссылка (необязательно)</label>
       <input id="task-link" type="url" placeholder="https://..." maxlength="500">
       
+      <!-- Превью ссылки -->
+      <div id="link-preview" class="link-preview"></div>
+      
       <div class="modal-buttons">
         <button class="btn-cancel" onclick="closeEditModal()">Отмена</button>
         <button class="btn-save" onclick="saveTask()">Сохранить ✨</button>
@@ -767,25 +1003,23 @@
     </div>
   </div>
 
-  <!-- Модалка детального просмотра -->
   <div id="detail-modal" class="modal">
     <div class="modal-content" id="detail-content"></div>
   </div>
 
-  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     // ⚠️ ВСТАВЬТЕ СЮДА ВАШ КОНФИГ FIREBASE ⚠️
     const firebaseConfig = {
-  apiKey: "AIzaSyAyQfQD8aRxLKhEtIcq4QzKjCLmJgQXlVc",
-  authDomain: "miniappvolkov.firebaseapp.com",
-  databaseURL: "https://miniappvolkov-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "miniappvolkov",
-  storageBucket: "miniappvolkov.firebasestorage.app",
-  messagingSenderId: "798881767507",
-  appId: "1:798881767507:web:4d9061ef9beb42d607a6a6"
+  apiKey: "AIzaSyAyQfQD8aRxLKhEtIcq4QzKjCLmJgQXlVc",
+  authDomain: "miniappvolkov.firebaseapp.com",
+  databaseURL: "https://miniappvolkov-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "miniappvolkov",
+  storageBucket: "miniappvolkov.firebasestorage.app",
+  messagingSenderId: "798881767507",
+  appId: "1:798881767507:web:4d9061ef9beb42d607a6a6"
 };
 
     const app = initializeApp(firebaseConfig);
@@ -846,9 +1080,12 @@
     }
 
     let tasks = [];
-    let currentFilter = 'all';
+    let currentFilter = 'active';
     let editingTaskId = null;
     let currentDetailId = null;
+    let selectedCategory = 'active';
+    let currentPreview = null; // {image, title, description, domain, logo}
+    let previewDebounce = null;
 
     function haptic(type = 'light') {
       try {
@@ -857,11 +1094,127 @@
       } catch(e) {}
     }
 
+    // ============ ПРЕВЬЮ ССЫЛОК ============
+
+    async function fetchLinkPreview(url) {
+      try {
+        const apiUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&audio=false&video=false&iframe=false`;
+        const res = await fetch(apiUrl);
+        if (!res.ok) throw new Error('preview failed');
+        const json = await res.json();
+        if (json.status !== 'success') throw new Error('no data');
+        
+        const data = json.data || {};
+        let domain = '';
+        try { domain = new URL(url).hostname.replace('www.', ''); } catch(e) {}
+        
+        return {
+          image: data.image?.url || null,
+          title: data.title || domain || url,
+          description: data.description || '',
+          domain: domain,
+          logo: data.logo?.url || null
+        };
+      } catch (e) {
+        console.warn('Preview fetch failed:', e);
+        return null;
+      }
+    }
+
+    function renderLinkPreview(preview) {
+      const container = document.getElementById('link-preview');
+      if (!preview) {
+        container.className = 'link-preview';
+        container.innerHTML = '';
+        return;
+      }
+      
+      const img = preview.image 
+        ? `<img class="link-preview-image" src="${escapeHtml(preview.image)}" onerror="this.style.display='none'">`
+        : '';
+      
+      const logoImg = preview.logo 
+        ? `<img src="${escapeHtml(preview.logo)}" onerror="this.style.display='none'">`
+        : '';
+      
+      container.className = 'link-preview active';
+      container.innerHTML = `
+        ${img}
+        <div class="link-preview-body">
+          <div class="link-preview-title">${escapeHtml(preview.title)}</div>
+          ${preview.description ? `<div class="link-preview-desc">${escapeHtml(preview.description)}</div>` : ''}
+          <div class="link-preview-domain">
+            ${logoImg}
+            ${escapeHtml(preview.domain || 'ссылка')}
+          </div>
+        </div>
+      `;
+    }
+
+    function showPreviewLoading() {
+      const container = document.getElementById('link-preview');
+      container.className = 'link-preview active loading';
+      container.innerHTML = `
+        <div class="link-preview-spinner"></div>
+        <span>Загружаем превью...</span>
+      `;
+    }
+
+    function showPreviewError() {
+      const container = document.getElementById('link-preview');
+      container.className = 'link-preview active';
+      container.innerHTML = `
+        <div class="link-preview-error">
+          ⚠️ Не удалось загрузить превью
+        </div>
+      `;
+    }
+
+    async function handleLinkInput() {
+      clearTimeout(previewDebounce);
+      const linkInput = document.getElementById('task-link');
+      let url = linkInput.value.trim();
+      
+      if (!url) {
+        currentPreview = null;
+        renderLinkPreview(null);
+        return;
+      }
+      
+      // Debounce 800ms
+      previewDebounce = setTimeout(async () => {
+        // Автоматически добавляем https://
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          url = 'https://' + url;
+        }
+        
+        if (!isValidUrl(url)) {
+          currentPreview = null;
+          renderLinkPreview(null);
+          return;
+        }
+        
+        showPreviewLoading();
+        const preview = await fetchLinkPreview(url);
+        
+        if (preview && (preview.image || preview.title)) {
+          currentPreview = preview;
+          renderLinkPreview(preview);
+        } else {
+          currentPreview = null;
+          showPreviewError();
+        }
+      }, 800);
+    }
+
+    // ============ ОСНОВНАЯ ЛОГИКА ============
+
     onValue(tasksRef, (snapshot) => {
       const data = snapshot.val() || {};
       tasks = Object.entries(data).map(([id, task]) => ({
         id,
         ...task,
+        category: task.category || 'active',
         voters: task.voters || {},
         votes: task.voters ? Object.keys(task.voters).length : 0
       }));
@@ -881,12 +1234,31 @@
       render();
     };
 
+    window.selectCategory = function(cat) {
+      selectedCategory = cat;
+      document.querySelectorAll('.category-option').forEach(b => {
+        b.classList.toggle('active', b.dataset.value === cat);
+      });
+      const desc = document.getElementById('category-desc');
+      if (cat === 'active') {
+        desc.textContent = 'Общая задача для всей команды — все могут видеть и голосовать';
+      } else {
+        desc.textContent = 'Личная задача — видна только вам';
+      }
+      haptic('light');
+    };
+
     function getFiltered() {
       let list = [...tasks];
-      if (currentFilter === 'active') list = list.filter(t => !t.done);
-      else if (currentFilter === 'done') list = list.filter(t => t.done);
-      else if (currentFilter === 'top') list = list.filter(t => !t.done && t.votes >= 5);
-      else if (currentFilter === 'mine') list = list.filter(t => t.authorId === userId);
+      
+      if (currentFilter === 'active') {
+        list = list.filter(t => !t.done && t.category === 'active');
+      } else if (currentFilter === 'mine') {
+        list = list.filter(t => !t.done && t.category === 'mine' && t.authorId === userId);
+      } else if (currentFilter === 'done') {
+        list = list.filter(t => t.done && (t.category === 'active' || t.authorId === userId));
+      }
+      
       list.sort((a, b) => {
         if (a.done !== b.done) return a.done ? 1 : -1;
         return b.votes - a.votes;
@@ -897,21 +1269,21 @@
     function render() {
       const container = document.getElementById('tasks');
       const list = getFiltered();
-      const active = tasks.filter(t => !t.done).length;
-      const done = tasks.filter(t => t.done).length;
-      const mine = tasks.filter(t => t.authorId === userId).length;
       
-      // Считаем задачи, выполненные в текущем месяце
+      const active = tasks.filter(t => !t.done && t.category === 'active').length;
+      const done = tasks.filter(t => t.done && (t.category === 'active' || t.authorId === userId)).length;
+      const mine = tasks.filter(t => !t.done && t.category === 'mine' && t.authorId === userId).length;
+      
       const now = new Date();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
       const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
       const doneThisMonth = tasks.filter(t => {
         if (!t.done) return false;
+        if (t.category === 'mine' && t.authorId !== userId) return false;
         const doneTime = t.doneAt || t.createdAt || 0;
         return doneTime >= monthStart && doneTime < monthEnd;
       }).length;
       
-      // Название месяца
       const monthNames = [
         'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
         'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'
@@ -927,11 +1299,20 @@
       container.innerHTML = '';
       
       if (list.length === 0) {
+        let emptyText = 'Здесь пока пусто';
+        let emptySub = 'Предложите первую задачу!';
+        if (currentFilter === 'mine') {
+          emptyText = 'Нет личных задач';
+          emptySub = 'Добавьте задачу в категории «Мои»';
+        } else if (currentFilter === 'done') {
+          emptyText = 'Ещё ничего не сделано';
+          emptySub = 'Отметьте первую готовую задачу';
+        }
         container.innerHTML = `
           <div class="empty">
             <span class="empty-emoji">🌱</span>
-            Здесь пока пусто<br>
-            <span style="font-size:13px;">Предложите первую задачу!</span>
+            ${emptyText}<br>
+            <span style="font-size:13px;">${emptySub}</span>
           </div>
         `;
         return;
@@ -939,21 +1320,41 @@
       
       list.forEach(task => {
         const isVoted = task.voters && task.voters[userId];
-        const isHot = task.votes >= 5 && !task.done;
+        const isHot = task.votes >= 5 && !task.done && task.category === 'active';
+        const isMineCategory = task.category === 'mine';
         const isMine = task.authorId === userId;
+        
         const div = document.createElement('div');
-        div.className = 'task' + (task.done ? ' done' : '') + (isHot ? ' hot' : '') + (isMine && !task.done && !isHot ? ' mine' : '');
+        let classes = 'task';
+        if (task.done) classes += ' done';
+        else if (isMineCategory) classes += ' category-mine';
+        else if (isHot) classes += ' hot';
+        div.className = classes;
         
         const hasWhy = task.why && task.why.trim();
         const hasLink = task.link && task.link.trim();
         const badges = [];
+        if (isMineCategory && !task.done) badges.push('<span class="badge-pill badge-category-mine">👤 личная</span>');
         if (hasWhy) badges.push('<span class="badge-pill">📝 описание</span>');
         if (hasLink) badges.push('<span class="badge-pill">🔗 ссылка</span>');
+        
+        const voteBlock = task.category === 'active' ? `
+          <button class="vote ${isVoted ? 'voted' : ''}" data-id="${task.id}" data-action="vote">
+            <span class="vote-emoji">${isVoted ? '❤️' : '👍'}</span>
+            <span class="vote-count">${task.votes}</span>
+          </button>
+        ` : '';
+        
+        // Миниатюра превью
+        const thumbHtml = task.preview?.image 
+          ? `<div class="task-thumb" style="background-image:url('${escapeHtml(task.preview.image)}')" data-id="${task.id}" data-action="open"></div>`
+          : '';
         
         div.innerHTML = `
           <button class="check ${task.done ? 'done' : ''}" data-id="${task.id}" data-action="check">
             ${task.done ? '✓' : ''}
           </button>
+          ${thumbHtml}
           <div class="task-body" data-id="${task.id}" data-action="open">
             <div class="task-title ${task.done ? 'strike' : ''}">
               ${isHot ? '<span class="fire">🔥</span>' : ''}${escapeHtml(task.title)}
@@ -963,10 +1364,7 @@
               <span class="badge-author">от ${escapeHtml(task.author)}${isMine ? ' (вы)' : ''}</span>
             </div>
           </div>
-          <button class="vote ${isVoted ? 'voted' : ''}" data-id="${task.id}" data-action="vote">
-            <span class="vote-emoji">${isVoted ? '❤️' : '👍'}</span>
-            <span class="vote-count">${task.votes}</span>
-          </button>
+          ${voteBlock}
         `;
         container.appendChild(div);
       });
@@ -997,7 +1395,7 @@
 
     async function vote(id) {
       const task = tasks.find(t => t.id === id);
-      if (!task) return;
+      if (!task || task.category !== 'active') return;
       const voters = { ...(task.voters || {}) };
       if (voters[userId]) delete voters[userId];
       else voters[userId] = true;
@@ -1029,21 +1427,12 @@
     function renderDetail(task) {
       const isVoted = task.voters && task.voters[userId];
       const isMine = task.authorId === userId;
+      const isMineCategory = task.category === 'mine';
       const dateCreated = task.createdAt ? new Date(task.createdAt).toLocaleDateString('ru-RU') : '';
       const linkValid = task.link && isValidUrl(task.link);
+      const preview = task.preview;
       
-      document.getElementById('detail-content').innerHTML = `
-        <h2>${task.done ? '✅ ' : '🚀 '}${escapeHtml(task.title)}</h2>
-        
-        <div class="detail-info">
-          <div class="detail-info-item">
-            ${makeAvatarHtml(task.author, task.authorId, task.authorPhoto, 20)}
-            <span>${escapeHtml(task.author)}${isMine ? ' (вы)' : ''}</span>
-          </div>
-          ${dateCreated ? `<div class="detail-info-item">📅 ${dateCreated}</div>` : ''}
-          ${task.done && task.doneBy ? `<div class="detail-info-item">✓ ${escapeHtml(task.doneBy)}</div>` : ''}
-        </div>
-        
+      const votesBlock = task.category === 'active' ? `
         <div class="detail-votes">
           <div class="detail-votes-info">
             <div class="detail-votes-count">${task.votes}</div>
@@ -1055,6 +1444,63 @@
             ${isVoted ? '❤️ Отдан' : '👍 Голосую'}
           </button>
         </div>
+      ` : `
+        <div class="detail-votes" style="background:linear-gradient(135deg, rgba(124,92,255,0.12), rgba(124,92,255,0.06));">
+          <div class="detail-votes-info">
+            <div class="detail-votes-count" style="color:var(--accent-purple);">👤</div>
+            <div class="detail-votes-label">Личная задача</div>
+          </div>
+        </div>
+      `;
+      
+      // Блок ссылки: превью-карточка или обычная ссылка
+      let linkBlock = '';
+      if (linkValid) {
+        if (preview && (preview.image || preview.title)) {
+          const img = preview.image 
+            ? `<img class="detail-link-image" src="${escapeHtml(preview.image)}" onerror="this.style.display='none'">`
+            : '';
+          const logoImg = preview.logo 
+            ? `<img src="${escapeHtml(preview.logo)}" onerror="this.style.display='none'">`
+            : '';
+          linkBlock = `
+            <div class="detail-link-card" onclick="openLink('${escapeHtml(task.link)}')">
+              ${img}
+              <div class="detail-link-body">
+                <div class="detail-link-title">${escapeHtml(preview.title || task.link)}</div>
+                ${preview.description ? `<div class="detail-link-desc">${escapeHtml(preview.description)}</div>` : ''}
+                <div class="detail-link-url">
+                  ${logoImg}
+                  🔗 ${escapeHtml(preview.domain || task.link)}
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          linkBlock = `
+            <div class="detail-section">
+              <div class="detail-section-title">🔗 Ссылка</div>
+              <div class="detail-link" onclick="openLink('${escapeHtml(task.link)}')">
+                🌐 <span>${escapeHtml(task.link)}</span>
+              </div>
+            </div>
+          `;
+        }
+      }
+      
+      document.getElementById('detail-content').innerHTML = `
+        <h2>${task.done ? '✅ ' : (isMineCategory ? '👤 ' : '🚀 ')}${escapeHtml(task.title)}</h2>
+        
+        <div class="detail-info">
+          <div class="detail-info-item">
+            ${makeAvatarHtml(task.author, task.authorId, task.authorPhoto, 20)}
+            <span>${escapeHtml(task.author)}${isMine ? ' (вы)' : ''}</span>
+          </div>
+          ${dateCreated ? `<div class="detail-info-item">📅 ${dateCreated}</div>` : ''}
+          ${task.done && task.doneBy ? `<div class="detail-info-item">✓ ${escapeHtml(task.doneBy)}</div>` : ''}
+        </div>
+        
+        ${votesBlock}
         
         ${task.why ? `
           <div class="detail-section">
@@ -1063,21 +1509,11 @@
           </div>
         ` : ''}
         
-        ${linkValid ? `
-          <div class="detail-section">
-            <div class="detail-section-title">🔗 Ссылка</div>
-            <div class="detail-link" onclick="openLink('${escapeHtml(task.link)}')">
-              🌐 <span>${escapeHtml(task.link)}</span>
-            </div>
-          </div>
-        ` : ''}
+        ${linkBlock}
         
-        <div class="modal-buttons">
-          <button class="btn-cancel" onclick="closeDetail()">Закрыть</button>
-          <button class="${task.done ? 'btn-cancel' : 'btn-save'}" onclick="toggleDoneFromDetail('${task.id}')">
-            ${task.done ? '↩ В работу' : '✓ Готово'}
-          </button>
-        </div>
+        <button class="btn-done-big ${task.done ? 'reopen' : ''}" onclick="toggleDoneFromDetail('${task.id}')">
+          ${task.done ? '↩ Вернуть в работу' : '✓ Готово'}
+        </button>
         
         ${isMine ? `
           <div class="modal-buttons" style="margin-top:10px;">
@@ -1086,16 +1522,76 @@
           </div>
         ` : ''}
       `;
+      
+      setupSwipeToClose();
     }
 
-    window.closeDetail = function() {
-      document.getElementById('detail-modal').classList.remove('active');
-      currentDetailId = null;
-    };
+    function setupSwipeToClose() {
+      const modalContent = document.querySelector('#detail-modal .modal-content');
+      if (!modalContent) return;
+      
+      let startY = 0;
+      let currentY = 0;
+      let isDragging = false;
+      
+      const onTouchStart = (e) => {
+        if (modalContent.scrollTop > 0) return;
+        startY = e.touches[0].clientY;
+        currentY = startY;
+        isDragging = true;
+        modalContent.classList.add('dragging');
+      };
+      
+      const onTouchMove = (e) => {
+        if (!isDragging) return;
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+        if (diff < 0) {
+          modalContent.style.transform = 'translateY(0)';
+          return;
+        }
+        if (modalContent.scrollTop > 0) {
+          isDragging = false;
+          modalContent.style.transform = '';
+          modalContent.classList.remove('dragging');
+          return;
+        }
+        modalContent.style.transform = `translateY(${diff}px)`;
+      };
+      
+      const onTouchEnd = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        modalContent.classList.remove('dragging');
+        const diff = currentY - startY;
+        if (diff > 100) {
+          modalContent.style.transform = '';
+          closeDetailAnimated();
+        } else {
+          modalContent.style.transform = '';
+        }
+      };
+      
+      modalContent.addEventListener('touchstart', onTouchStart, { passive: true });
+      modalContent.addEventListener('touchmove', onTouchMove, { passive: true });
+      modalContent.addEventListener('touchend', onTouchEnd, { passive: true });
+    }
 
+    function closeDetailAnimated() {
+      const modal = document.getElementById('detail-modal');
+      const content = modal.querySelector('.modal-content');
+      content.classList.add('closing');
+      setTimeout(() => {
+        modal.classList.remove('active');
+        content.classList.remove('closing');
+        content.style.transform = '';
+        currentDetailId = null;
+      }, 280);
+    }
+
+    window.closeDetail = function() { closeDetailAnimated(); };
     window.voteDetail = function(id) { vote(id); };
     window.toggleDoneFromDetail = function(id) { toggleDone(id); };
-
     window.openLink = function(url) {
       if (tg?.openLink) tg.openLink(url);
       else window.open(url, '_blank');
@@ -1109,14 +1605,14 @@
         tg.showConfirm(confirmMsg, async (ok) => {
           if (ok) {
             await remove(ref(db, `tasks/${id}`));
-            closeDetail();
+            closeDetailAnimated();
             haptic('success');
           }
         });
       } else {
         if (confirm(confirmMsg)) {
           await remove(ref(db, `tasks/${id}`));
-          closeDetail();
+          closeDetailAnimated();
         }
       }
     };
@@ -1125,21 +1621,31 @@
       const task = tasks.find(t => t.id === id);
       if (!task) return;
       editingTaskId = id;
+      selectedCategory = task.category || 'active';
+      currentPreview = task.preview || null;
       document.getElementById('edit-title').textContent = '✏ Изменить';
       document.getElementById('task-input').value = task.title || '';
       document.getElementById('task-why').value = task.why || '';
       document.getElementById('task-link').value = task.link || '';
-      closeDetail();
-      document.getElementById('edit-modal').classList.add('active');
-      setTimeout(() => document.getElementById('task-input').focus(), 100);
+      selectCategory(selectedCategory);
+      renderLinkPreview(currentPreview);
+      closeDetailAnimated();
+      setTimeout(() => {
+        document.getElementById('edit-modal').classList.add('active');
+        document.getElementById('task-input').focus();
+      }, 250);
     };
 
     window.openAddModal = function() {
       editingTaskId = null;
+      selectedCategory = currentFilter === 'mine' ? 'mine' : 'active';
+      currentPreview = null;
       document.getElementById('edit-title').textContent = '✨ Новая задача';
       document.getElementById('task-input').value = '';
       document.getElementById('task-why').value = '';
       document.getElementById('task-link').value = '';
+      selectCategory(selectedCategory);
+      renderLinkPreview(null);
       document.getElementById('edit-modal').classList.add('active');
       setTimeout(() => document.getElementById('task-input').focus(), 100);
     };
@@ -1147,6 +1653,8 @@
     window.closeEditModal = function() {
       document.getElementById('edit-modal').classList.remove('active');
       editingTaskId = null;
+      currentPreview = null;
+      clearTimeout(previewDebounce);
     };
 
     window.saveTask = async function() {
@@ -1169,15 +1677,28 @@
       
       haptic('success');
       
+      // Данные превью — только валидные поля (Firebase не любит undefined)
+      const previewData = currentPreview && link ? {
+        image: currentPreview.image || null,
+        title: currentPreview.title || null,
+        description: currentPreview.description || null,
+        domain: currentPreview.domain || null,
+        logo: currentPreview.logo || null
+      } : null;
+      
       if (editingTaskId) {
         await update(ref(db, `tasks/${editingTaskId}`), {
           title, why, link,
+          category: selectedCategory,
+          preview: previewData,
           updatedAt: Date.now()
         });
       } else {
         const newTask = {
           title, why, link,
-          voters: { [userId]: true },
+          category: selectedCategory,
+          preview: previewData,
+          voters: selectedCategory === 'active' ? { [userId]: true } : {},
           done: false,
           author: userName,
           authorId: userId,
@@ -1187,6 +1708,10 @@
         await push(tasksRef, newTask);
       }
       
+      if (!editingTaskId) {
+        setFilter(selectedCategory);
+      }
+      
       closeEditModal();
     };
 
@@ -1194,7 +1719,7 @@
       if (e.target.id === 'edit-modal') closeEditModal();
     });
     document.getElementById('detail-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'detail-modal') closeDetail();
+      if (e.target.id === 'detail-modal') closeDetailAnimated();
     });
 
     document.getElementById('task-input').addEventListener('keypress', (e) => {
@@ -1204,12 +1729,18 @@
       }
     });
 
+    // Слушаем изменения поля ссылки — грузим превью
+    document.getElementById('task-link').addEventListener('input', handleLinkInput);
+    document.getElementById('task-link').addEventListener('paste', () => {
+      setTimeout(handleLinkInput, 50);
+    });
+
     if (tg?.BackButton) {
       tg.BackButton.onClick(() => {
         if (document.getElementById('edit-modal').classList.contains('active')) {
           closeEditModal();
         } else if (document.getElementById('detail-modal').classList.contains('active')) {
-          closeDetail();
+          closeDetailAnimated();
         }
       });
       
