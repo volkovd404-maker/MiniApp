@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  #<meta charset="UTF-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Задачи команды</title>
+  <title>Семейный киновечер</title>
   
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   
@@ -1154,7 +1154,7 @@
       <div class="month-icon">🏆</div>
       <div class="month-info">
         <div class="month-value" id="stat-month">0</div>
-        <div class="month-label">закрыто в этом месяце</div>
+        <div class="month-label">Просмотрено в этом месяце</div>
         <div class="month-name" id="month-name">Загрузка...</div>
       </div>
     </div>
@@ -1164,11 +1164,11 @@
     <div class="stats">
       <div class="stat-card stat-active">
         <div class="stat-value" id="stat-active">0</div>
-        <div class="stat-label">🔬 исследования</div>
+        <div class="stat-label">🎬 Фильмы</div>
       </div>
       <div class="stat-card stat-mine">
         <div class="stat-value" id="stat-mine">0</div>
-        <div class="stat-label">🔍 поиск</div>
+        <div class="stat-label">🎭 Сериалы</div>
       </div>
       <div class="stat-card stat-done">
         <div class="stat-value" id="stat-done">0</div>
@@ -1177,9 +1177,9 @@
     </div>
     
     <div class="filters">
-      <button class="filter active" data-filter="active" onclick="setFilter('active')">🔬 Исследования</button>
-      <button class="filter" data-filter="mine" onclick="setFilter('mine')">🔍 Поиск</button>
-      <button class="filter" data-filter="done" onclick="setFilter('done')">✅ Готово</button>
+      <button class="filter active" data-filter="active" onclick="setFilter('active')">🎬 Фильмы</button>
+      <button class="filter" data-filter="mine" onclick="setFilter('mine')">🎭 Сериалы</button>
+      <button class="filter" data-filter="done" onclick="setFilter('done')">✅ Просмотрено</button>
       <button class="filter" data-filter="vetoed" onclick="setFilter('vetoed')">✋ Вето</button>
     </div>
     
@@ -1193,7 +1193,7 @@
           <span class="popcorn-piece">🌽</span>
           <span class="popcorn-piece">🌽</span>
         </div>
-        <div class="popcorn-text">Готовим задачи...</div>
+        <div class="popcorn-text">Готовим фильмы...</div>
       </div>
     </div>
   </div>
@@ -1205,23 +1205,23 @@
   
   <div id="edit-modal" class="modal">
     <div class="modal-content">
-      <h2 id="edit-title">✨ Новая задача</h2>
+      <h2 id="edit-title">✨ Предложить фильм</h2>
       
       <label>📂 Категория</label>
       <div class="category-switch">
         <button type="button" class="category-option active" data-value="active" onclick="selectCategory('active')">
-          🔬 Исследования
+          🎬 Фильмы
         </button>
         <button type="button" class="category-option" data-value="mine" onclick="selectCategory('mine')">
-          🔍 Поиск
+          🎭 Сериалы
         </button>
       </div>
-      <div class="category-desc" id="category-desc">Задача для командного исследования</div>
+      <div class="category-desc" id="category-desc">Фильмы для просмотра</div>
       
       <label>Название</label>
-      <input id="task-input" type="text" placeholder="Что нужно сделать?" maxlength="150">
+      <input id="task-input" type="text" placeholder="Что посмотрим?" maxlength="150">
       
-      <label>💡 Почему это важно</label>
+      <label>💡 Почему нужно посмотреть</label>
       <textarea id="task-why" rows="3" placeholder="Обоснование, польза, контекст..." maxlength="1000"></textarea>
       
       <label>🔗 Ссылка (необязательно)</label>
@@ -1469,8 +1469,8 @@
         b.classList.toggle('active', b.dataset.value === cat);
       });
       const desc = document.getElementById('category-desc');
-      if (cat === 'active') desc.textContent = 'Задача для командного исследования — все могут голосовать';
-      else desc.textContent = 'Задача для поиска решений или информации';
+      if (cat === 'active') desc.textContent = 'Фильмы для просмотра — все могут голосовать';
+      else desc.textContent = 'Сериалы для просмотра';
       haptic('light');
     };
 
@@ -1565,7 +1565,7 @@
         container.innerHTML = `
           <div class="today-empty">
             <div class="today-empty-title">
-              🎯 Нет активных исследований
+              🎯 Нет фильмов на просмотре
             </div>
             <div class="today-empty-next">
               <div class="today-empty-next-label">
@@ -1631,16 +1631,16 @@
       container.innerHTML = '';
       
       if (!tasksLoaded) {
-        container.innerHTML = popcornLoaderHtml('Готовим задачи...');
+        container.innerHTML = popcornLoaderHtml('Готовим фильмы...');
         return;
       }
       
       if (list.length === 0) {
         let emptyText = 'Здесь пока пусто';
-        let emptySub = 'Предложите первую задачу!';
-        if (currentFilter === 'mine') { emptyText = 'Нет задач в поиске'; emptySub = 'Добавьте задачу в категории «Поиск»'; }
-        else if (currentFilter === 'done') { emptyText = 'Ещё ничего не сделано'; emptySub = 'Отметьте первую готовую задачу'; }
-        else if (currentFilter === 'vetoed') { emptyText = 'Нет задач с вето'; emptySub = 'Все задачи в работе — отлично!'; }
+        let emptySub = 'Предложите первый фильм!';
+        if (currentFilter === 'mine') { emptyText = 'Нет фильмов в поиске'; emptySub = 'Добавьте сериал в категории «Сериалы»'; }
+        else if (currentFilter === 'done') { emptyText = 'Ещё ничего не сделано'; emptySub = 'Отметьте первый просмотренный фильм'; }
+        else if (currentFilter === 'vetoed') { emptyText = 'Нет фильмов с правом вето'; emptySub = 'Все фильмы в планах — отлично!'; }
         container.innerHTML = `
           <div class="empty">
             <span class="empty-emoji">🌱</span>
@@ -1669,7 +1669,7 @@
         const hasLink = task.link && task.link.trim();
         const badges = [];
         if (task.vetoed) badges.push('<span class="badge-pill badge-veto">✋ вето</span>');
-        if (isMineCategory && !task.done) badges.push('<span class="badge-pill badge-category-mine">🔍 поиск</span>');
+        if (isMineCategory && !task.done) badges.push('<span class="badge-pill badge-category-mine">🎭 Сериалы</span>');
         if (hasWhy) badges.push('<span class="badge-pill">📝 описание</span>');
         if (hasLink) badges.push('<span class="badge-pill">🔗 ссылка</span>');
         
@@ -1754,8 +1754,8 @@
       if (!task) return;
       const newState = !task.vetoed;
       const confirmMsg = newState 
-        ? `Наложить вето на задачу «${task.title}»? Она не будет браться в работу.`
-        : `Снять вето с задачи «${task.title}»?`;
+        ? `Наложить вето на фильм «${task.title}»? Он не будет просматриваться с семьей.`
+        : `Снять вето с фильма «${task.title}»?`;
       const doIt = async () => {
         haptic('success');
         await update(ref(db, `tasks/${id}`), {
@@ -1892,7 +1892,7 @@
         
         ${task.why ? `
           <div class="detail-section">
-            <div class="detail-section-title">💡 Почему это важно</div>
+            <div class="detail-section-title">💡 Почему нужно посмотреть</div>
             <div class="detail-text">${escapeHtml(task.why)}</div>
           </div>
         ` : ''}
