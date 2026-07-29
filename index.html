@@ -1370,7 +1370,46 @@
         return null;
       }
     }
+// Новая функция для обработки ввода названия фильма
+let titleSearchDebounce = null;
 
+function handleTitleInput() {
+  const title = document.getElementById('task-input').value.trim();
+  const linkInput = document.getElementById('task-link').value.trim();
+  
+  // Если есть ссылка — используем старую логику превью
+  if (linkInput) {
+    handleLinkInput();
+    return;
+  }
+  
+  // Если название слишком короткое — ничего не делаем
+  if (title.length < 2) {
+    currentPreview = null;
+    renderLinkPreview(null);
+    return;
+  }
+  
+  // Дебаунс, чтобы не дёргать API при каждом символе
+  clearTimeout(titleSearchDebounce);
+  titleSearchDebounce = setTimeout(async () => {
+    // Показываем индикатор загрузки
+    showPreviewLoading();
+    
+    const preview = await fetchMoviePoster(title);
+    
+    if (preview) {
+      currentPreview = preview;
+      renderLinkPreview(preview);
+    } else {
+      currentPreview = null;
+      // Показываем сообщение, что постер не найден
+      const container = document.getElementById('link-preview');
+      container.className = 'link-preview active';
+      container.innerHTML = `<div class="link-preview-error">🎬 Постер не найден. Попробуйте другую формулировку или добавьте ссылку.</div>`;
+    }
+  }, 500); // Ждём 500мс после последнего ввода
+}
     function renderLinkPreview(preview) {
       const container = document.getElementById('link-preview');
       if (!preview) {
@@ -1726,7 +1765,47 @@
         return url.protocol === 'http:' || url.protocol === 'https:';
       } catch { return false; }
     }
-
+// Поиск постера по названию фильма через TMDB
+async function fetchMoviePoster(title) {
+  const apiKey = eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkNTgwNmVjM2FkYmNkODUwYzFmZTgxMDliMTVlOWYyZiIsIm5iZiI6MTc4NTMyOTg3OC42NzEsInN1YiI6IjZhNjlmOGQ2YzA2ZjBjYTY2Yjc0MDRlOCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.g0wZcEJLllPdTDur8wMt_-tteiVuoVunA0nh8IwHKU0; // замените на реальный ключ
+  
+  // Проверяем, что название не пустое
+  if (!title || title.length < 2) return null;
+  
+  try {
+    // Ищем фильм по названию на русском
+    const searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(title)}&language=ru-RU`;
+    const response = await fetch(searchUrl);
+    
+    if (!response.ok) {
+      console.warn('TMDB ответил с ошибкой:', response.status);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    // Берём первый результат
+    if (data.results && data.results.length > 0) {
+      const movie = data.results[0];
+      
+      // Проверяем, есть ли постер
+      if (movie.poster_path) {
+        return {
+          image: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+          title: movie.title || title,
+          description: movie.overview || '',
+          domain: 'TMDB',
+          logo: null
+        };
+      }
+    }
+    
+    return null;
+  } catch (e) {
+    console.warn('Ошибка при запросе к TMDB:', e);
+    return null;
+  }
+}
     async function vote(id) {
       const task = tasks.find(t => t.id === id);
       if (!task || task.vetoed) return;
@@ -1849,26 +1928,25 @@
       ` : '';
       
       let linkBlock = '';
-      if (linkValid) {
-        if (preview && (preview.image || preview.title)) {
-          const img = preview.image ? `<img class="detail-link-image" src="${escapeHtml(preview.image)}" onerror="this.style.display='none'">` : '';
-          const logoImg = preview.logo ? `<img src="${escapeHtml(preview.logo)}" onerror="this.style.display='none'">` : '';
-          linkBlock = `
-            <div class="detail-link-card" onclick="openLink('${escapeHtml(task.link)}')">
-              ${img}
-              <div class="detail-link-body">
-                <div class="detail-link-title">${escapeHtml(preview.title || task.link)}</div>
-                ${preview.description ? `<div class="detail-link-desc">${escapeHtml(preview.description)}</div>` : ''}
-                <div class="detail-link-url">${logoImg}🔗 ${escapeHtml(preview.domain || task.link)}</div>
-              </div>
-            </div>
-          `;
-        } else {
-          linkBlock = `
-            <div class="detail-section">
-              <div class="detail-section-title">🔗 Ссылка</div>
-              <div class="detail-link" onclick="openLink('${escapeHtml(task.link)}')">🌐 <span>${escapeHtml(task.link)}</span></div>
-            </div>
+      // Если есть превью с картинкой
+if (preview && preview.image) {
+  linkBlock = `
+    <div class="detail-link-card" onclick="${linkValid ? `openLink('${escapeHtml(task.link)}')` : ''}">
+      <img class="detail-link-image" src="${escapeHtml(preview.image)}" onerror="this.style.display='none'">
+      <div class="detail-link-body">
+        <div class="detail-link-title">${escapeHtml(preview.title || task.title)}</div>
+        ${preview.description ? `<div class="detail-link-desc">${escapeHtml(preview.description)}</div>` : ''}
+        ${linkValid ? `<div class="detail-link-url">🔗 ${escapeHtml(preview.domain || task.link)}</div>` : ''}
+      </div>
+    </div>
+  `;
+} else if (linkValid) {
+  // Если нет постера, но есть ссылка
+  linkBlock = `
+    <div class="detail-section">
+      <div class="detail-section-title">🔗 Ссылка</div>
+      <div class="detail-link" onclick="openLink('${escapeHtml(task.link)}')">🌐 <span>${escapeHtml(task.link)}</span></div>
+    </div>
           `;
         }
       }
@@ -2043,13 +2121,13 @@
         }
       }
       haptic('success');
-      const previewData = currentPreview && link ? {
-        image: currentPreview.image || null,
-        title: currentPreview.title || null,
-        description: currentPreview.description || null,
-        domain: currentPreview.domain || null,
-        logo: currentPreview.logo || null
-      } : null;
+      const previewData = currentPreview ? {
+  image: currentPreview.image || null,
+  title: currentPreview.title || null,
+  description: currentPreview.description || null,
+  domain: currentPreview.domain || null,
+  logo: currentPreview.logo || null
+} : null;
       if (editingTaskId) {
         await update(ref(db, `tasks/${editingTaskId}`), {
           title, why, link,
@@ -2084,9 +2162,20 @@
       if (e.target.id === 'detail-modal') closeDetailAnimated();
     });
 
-    document.getElementById('task-input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveTask(); }
-    });
+   / Обработка ввода названия
+document.getElementById('task-input').addEventListener('input', handleTitleInput);
+
+// Обработка Enter для сохранения
+document.getElementById('task-input').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    saveTask();
+  }
+});
+
+// Обработка ссылки остаётся без изменений
+document.getElementById('task-link').addEventListener('input', handleLinkInput);
+document.getElementById('task-link').addEventListener('paste', () => setTimeout(handleLinkInput, 50));
 
     document.getElementById('task-link').addEventListener('input', handleLinkInput);
     document.getElementById('task-link').addEventListener('paste', () => setTimeout(handleLinkInput, 50));
