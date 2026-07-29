@@ -1137,6 +1137,195 @@
     }
     .toast.success { background: var(--accent-mint); }
     .toast.error { background: ); }
+    /* === TMDB превью в форме === */
+.tmdb-card {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #032541, #01b4e4);
+  color: white;
+}
+
+.tmdb-poster {
+  width: 90px;
+  height: 135px;
+  min-width: 90px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.tmdb-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tmdb-type {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.85;
+  background: rgba(255,255,255,0.15);
+  padding: 2px 8px;
+  border-radius: 6px;
+  align-self: flex-start;
+}
+
+.tmdb-title {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.tmdb-tagline {
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.85;
+  line-height: 1.3;
+}
+
+.tmdb-meta {
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.tmdb-genres {
+  font-size: 11px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.tmdb-desc {
+  font-size: 11px;
+  line-height: 1.4;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+/* === TMDB карточка в детальном виде === */
+.tmdb-detail-card {
+  background: linear-gradient(180deg, #032541 0%, #01b4e4 100%);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(3, 37, 65, 0.3);
+  position: relative;
+  transition: transform 0.15s;
+}
+
+.tmdb-detail-card:active { transform: scale(0.98); }
+
+.tmdb-detail-backdrop {
+  height: 140px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.tmdb-detail-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(3, 37, 65, 0.7) 100%);
+}
+
+.tmdb-detail-content {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  margin-top: -50px;
+  position: relative;
+  z-index: 1;
+}
+
+.tmdb-detail-poster {
+  width: 100px;
+  height: 150px;
+  min-width: 100px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+
+.tmdb-detail-info {
+  flex: 1;
+  min-width: 0;
+  padding-top: 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tmdb-detail-type {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(255,255,255,0.2);
+  padding: 3px 10px;
+  border-radius: 8px;
+  align-self: flex-start;
+  backdrop-filter: blur(10px);
+}
+
+.tmdb-detail-title {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-top: 4px;
+}
+
+.tmdb-detail-tagline {
+  font-size: 12px;
+  font-style: italic;
+  opacity: 0.9;
+  line-height: 1.35;
+}
+
+.tmdb-detail-meta {
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.tmdb-detail-genres {
+  font-size: 12px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.tmdb-detail-desc {
+  padding: 0 16px 12px;
+}
+
+.tmdb-detail-desc .detail-section-title {
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 6px;
+}
+
+.tmdb-detail-desc .detail-text {
+  color: white;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tmdb-detail-footer {
+  background: rgba(0,0,0,0.25);
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
   </style>
 </head>
 <body>
@@ -1260,7 +1449,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const tasksRef = ref(db, 'tasks');
-
+// === TMDB API ===
+const TMDB_API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJkNTgwNmVjM2FkYmNkODUwYzFmZTgxMDliMTVlOWYyZiIsIm5iZiI6MTc4NTMyOTg3OC42NzEsInN1YiI6IjZhNjlmOGQ2YzA2ZjBjYTY2Yjc0MDRlOCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.g0wZcEJLllPdTDur8wMt_-tteiVuoVunA0nh8IwHKU0';
+const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
+const TMDB_LANG = 'ru-RU';
     const tg = window.Telegram?.WebApp;
     const user = tg?.initDataUnsafe?.user;
     const userId = String(user?.id || 'test_' + Date.now());
@@ -1315,7 +1507,9 @@
     let currentDetailId = null;
     let selectedCategory = 'active';
     let currentPreview = null;
-    let previewDebounce = null;
+let previewDebounce = null;
+let titleDebounce = null;
+let lastSearchedTitle = '';
 
     function haptic(type = 'light') {
       try {
@@ -1347,61 +1541,209 @@
         </div>
       `;
     }
+// Парсим TMDB-ссылку: /movie/123, /tv/456, /person/789
+function parseTmdbUrl(url) {
+  try {
+    const u = new URL(url);
+    if (!u.hostname.includes('themoviedb.org')) return null;
+    const match = u.pathname.match(/\/(movie|tv|person)\/(\d+)/);
+    if (!match) return null;
+    return { type: match[1], id: match[2] };
+  } catch(e) { return null; }
+}
 
-    async function fetchLinkPreview(url) {
-      try {
-        const apiUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&audio=false&video=false&iframe=false`;
-        const res = await fetch(apiUrl);
-        if (!res.ok) throw new Error('preview failed');
-        const json = await res.json();
-        if (json.status !== 'success') throw new Error('no data');
-        const data = json.data || {};
-        let domain = '';
-        try { domain = new URL(url).hostname.replace('www.', ''); } catch(e) {}
-        return {
-          image: data.image?.url || null,
-          title: data.title || domain || url,
-          description: data.description || '',
-          domain: domain,
-          logo: data.logo?.url || null
-        };
-      } catch (e) {
-        console.warn('Preview fetch failed:', e);
-        return null;
-      }
+// Получаем данные из TMDB по типу и id
+async function fetchTmdbData(type, id) {
+  try {
+    const url = `https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('TMDB API failed');
+    const data = await res.json();
+    
+    if (type === 'movie') {
+      const year = data.release_date ? data.release_date.slice(0, 4) : '';
+      const rating = data.vote_average ? data.vote_average.toFixed(1) : '';
+      return {
+        image: data.poster_path ? TMDB_IMG_BASE + data.poster_path : null,
+        backdrop: data.backdrop_path ? TMDB_IMG_BASE + data.backdrop_path : null,
+        title: data.title + (year ? ` (${year})` : ''),
+        description: data.overview || '',
+        domain: 'themoviedb.org',
+        logo: null,
+        isTmdb: true,
+        tmdbType: 'movie',
+        tmdbRating: rating,
+        tmdbGenres: (data.genres || []).map(g => g.name).slice(0, 3).join(' • '),
+        tmdbRuntime: data.runtime ? `${data.runtime} мин` : '',
+        tmdbTagline: data.tagline || ''
+      };
     }
+    
+    if (type === 'tv') {
+      const year = data.first_air_date ? data.first_air_date.slice(0, 4) : '';
+      const rating = data.vote_average ? data.vote_average.toFixed(1) : '';
+      return {
+        image: data.poster_path ? TMDB_IMG_BASE + data.poster_path : null,
+        backdrop: data.backdrop_path ? TMDB_IMG_BASE + data.backdrop_path : null,
+        title: data.name + (year ? ` (${year})` : ''),
+        description: data.overview || '',
+        domain: 'themoviedb.org',
+        logo: null,
+        isTmdb: true,
+        tmdbType: 'tv',
+        tmdbRating: rating,
+        tmdbGenres: (data.genres || []).map(g => g.name).slice(0, 3).join(' • '),
+        tmdbSeasons: data.number_of_seasons ? `${data.number_of_seasons} сез.` : '',
+        tmdbTagline: data.tagline || ''
+      };
+    }
+    
+    if (type === 'person') {
+      return {
+        image: data.profile_path ? TMDB_IMG_BASE + data.profile_path : null,
+        title: data.name,
+        description: data.biography ? data.biography.slice(0, 200) + '...' : '',
+        domain: 'themoviedb.org',
+        logo: null,
+        isTmdb: true,
+        tmdbType: 'person',
+        tmdbKnownFor: data.known_for_department || ''
+      };
+    }
+    
+    return null;
+  } catch(e) {
+    console.warn('TMDB fetch failed:', e);
+    return null;
+  }
+}
+
+// Поиск в TMDB по названию (multi = все типы)
+async function searchTmdbByTitle(query) {
+  if (!query || query.trim().length < 2) return null;
+  try {
+    const url = `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&language=${TMDB_LANG}&query=${encodeURIComponent(query.trim())}&page=1&include_adult=false`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('TMDB search failed');
+    const data = await res.json();
+    
+    if (!data.results || data.results.length === 0) return null;
+    
+    // Фильтруем по наличию картинки, сортируем: фильм > сериал > персона + популярность
+    const sorted = data.results
+      .filter(r => r.poster_path || r.profile_path)
+      .sort((a, b) => {
+        const typeOrder = { movie: 0, tv: 1, person: 2 };
+        const aOrder = typeOrder[a.media_type] ?? 3;
+        const bOrder = typeOrder[b.media_type] ?? 3;
+        if (aOrder !== bOrder) return aOrder - bOrder;
+        return (b.popularity || 0) - (a.popularity || 0);
+      });
+    
+    if (sorted.length === 0) return null;
+    const best = sorted[0];
+    
+    if (best.media_type === 'movie' || best.media_type === 'tv' || best.media_type === 'person') {
+      return await fetchTmdbData(best.media_type, best.id);
+    }
+    return null;
+  } catch(e) {
+    console.warn('TMDB search failed:', e);
+    return null;
+  }
+}
+    async function fetchLinkPreview(url) {
+  // Если ссылка на TMDB — берём данные оттуда
+  const tmdb = parseTmdbUrl(url);
+  if (tmdb) {
+    const tmdbData = await fetchTmdbData(tmdb.type, tmdb.id);
+    if (tmdbData) return tmdbData;
+  }
+  
+  // Обычное превью через microlink
+  try {
+    const apiUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&audio=false&video=false&iframe=false`;
+    const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error('preview failed');
+    const json = await res.json();
+    if (json.status !== 'success') throw new Error('no data');
+    const data = json.data || {};
+    let domain = '';
+    try { domain = new URL(url).hostname.replace('www.', ''); } catch(e) {}
+    return {
+      image: data.image?.url || null,
+      title: data.title || domain || url,
+      description: data.description || '',
+      domain: domain,
+      logo: data.logo?.url || null
+    };
+  } catch (e) {
+    console.warn('Preview fetch failed:', e);
+    return null;
+  }
+}
 
     function renderLinkPreview(preview) {
-      const container = document.getElementById('link-preview');
-      if (!preview) {
-        container.className = 'link-preview';
-        container.innerHTML = '';
-        return;
-      }
-      const img = preview.image ? `<img class="link-preview-image" src="${escapeHtml(preview.image)}" onerror="this.style.display='none'">` : '';
-      const logoImg = preview.logo ? `<img src="${escapeHtml(preview.logo)}" onerror="this.style.display='none'">` : '';
-      container.className = 'link-preview active';
-      container.innerHTML = `
+  const container = document.getElementById('link-preview');
+  if (!preview) {
+    container.className = 'link-preview';
+    container.innerHTML = '';
+    return;
+  }
+  
+  container.className = 'link-preview active';
+  
+  // Красивый вид для TMDB
+  if (preview.isTmdb) {
+    const img = preview.image ? `<img class="tmdb-poster" src="${escapeHtml(preview.image)}" onerror="this.style.display='none'">` : '';
+    const meta = [];
+    if (preview.tmdbRating) meta.push(`⭐ ${preview.tmdbRating}`);
+    if (preview.tmdbRuntime) meta.push(preview.tmdbRuntime);
+    if (preview.tmdbSeasons) meta.push(preview.tmdbSeasons);
+    if (preview.tmdbKnownFor) meta.push(preview.tmdbKnownFor);
+    
+    const typeLabel = preview.tmdbType === 'movie' ? '🎬 Фильм' : preview.tmdbType === 'tv' ? '📺 Сериал' : '👤 Персона';
+    
+    container.innerHTML = `
+      <div class="tmdb-card">
         ${img}
-        <div class="link-preview-body">
-          <div class="link-preview-title">${escapeHtml(preview.title)}</div>
-          ${preview.description ? `<div class="link-preview-desc">${escapeHtml(preview.description)}</div>` : ''}
-          <div class="link-preview-domain">
-            ${logoImg}
-            ${escapeHtml(preview.domain || 'ссылка')}
-          </div>
+        <div class="tmdb-body">
+          <div class="tmdb-type">${typeLabel}</div>
+          <div class="tmdb-title">${escapeHtml(preview.title)}</div>
+          ${preview.tmdbTagline ? `<div class="tmdb-tagline">«${escapeHtml(preview.tmdbTagline)}»</div>` : ''}
+          ${meta.length ? `<div class="tmdb-meta">${meta.join(' • ')}</div>` : ''}
+          ${preview.tmdbGenres ? `<div class="tmdb-genres">${escapeHtml(preview.tmdbGenres)}</div>` : ''}
+          ${preview.description ? `<div class="tmdb-desc">${escapeHtml(preview.description.slice(0, 150))}${preview.description.length > 150 ? '...' : ''}</div>` : ''}
         </div>
-      `;
-    }
+      </div>
+    `;
+    return;
+  }
+  
+  // Обычное превью
+  const img = preview.image ? `<img class="link-preview-image" src="${escapeHtml(preview.image)}" onerror="this.style.display='none'">` : '';
+  const logoImg = preview.logo ? `<img src="${escapeHtml(preview.logo)}" onerror="this.style.display='none'">` : '';
+  container.innerHTML = `
+    ${img}
+    <div class="link-preview-body">
+      <div class="link-preview-title">${escapeHtml(preview.title)}</div>
+      ${preview.description ? `<div class="link-preview-desc">${escapeHtml(preview.description)}</div>` : ''}
+      <div class="link-preview-domain">
+        ${logoImg}
+        ${escapeHtml(preview.domain || 'ссылка')}
+      </div>
+    </div>
+  `;
+}
 
-    function showPreviewLoading() {
-      const container = document.getElementById('link-preview');
-      container.className = 'link-preview active loading';
-      container.innerHTML = `
-        <span class="popcorn-mini-icon">🍿</span>
-        <span>Готовим превью...</span>
-      `;
-    }
+    function showPreviewLoading(text = 'Готовим превью...') {
+  const container = document.getElementById('link-preview');
+  container.className = 'link-preview active loading';
+  container.innerHTML = `
+    <span class="popcorn-mini-icon">🍿</span>
+    <span>${escapeHtml(text)}</span>
+  `;
+}
 
     function showPreviewError() {
       const container = document.getElementById('link-preview');
@@ -1410,31 +1752,58 @@
     }
 
     async function handleLinkInput() {
-      clearTimeout(previewDebounce);
-      let url = document.getElementById('task-link').value.trim();
-      if (!url) {
-        currentPreview = null;
-        renderLinkPreview(null);
+  clearTimeout(previewDebounce);
+  let url = document.getElementById('task-link').value.trim();
+  
+  if (!url) {
+    // Ссылку убрали — если есть название, пробуем поискать по нему в TMDB
+    const title = document.getElementById('task-input').value.trim();
+    if (title.length >= 2) {
+      lastSearchedTitle = '';
+      document.getElementById('task-input').dispatchEvent(new Event('input'));
+    } else {
+      currentPreview = null;
+      renderLinkPreview(null);
+    }
+    return;
+  }
+  
+  previewDebounce = setTimeout(async () => {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
+    if (!isValidUrl(url)) {
+      currentPreview = null;
+      renderLinkPreview(null);
+      return;
+    }
+    
+    // TMDB-ссылка имеет приоритет — точный результат
+    const tmdb = parseTmdbUrl(url);
+    if (tmdb) {
+      showPreviewLoading('Загружаем с TMDB...');
+      const tmdbData = await fetchTmdbData(tmdb.type, tmdb.id);
+      if (tmdbData) {
+        currentPreview = tmdbData;
+        renderLinkPreview(tmdbData);
         return;
       }
-      previewDebounce = setTimeout(async () => {
-        if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
-        if (!isValidUrl(url)) {
-          currentPreview = null;
-          renderLinkPreview(null);
-          return;
-        }
-        showPreviewLoading();
-        const preview = await fetchLinkPreview(url);
-        if (preview && (preview.image || preview.title)) {
-          currentPreview = preview;
-          renderLinkPreview(preview);
-        } else {
-          currentPreview = null;
-          showPreviewError();
-        }
-      }, 800);
     }
+    
+    // Если название уже дало TMDB-превью — не перекрываем обычной ссылкой
+    if (currentPreview?.isTmdb) {
+      return;
+    }
+    
+    showPreviewLoading('Готовим превью...');
+    const preview = await fetchLinkPreview(url);
+    if (preview && (preview.image || preview.title)) {
+      currentPreview = preview;
+      renderLinkPreview(preview);
+    } else {
+      currentPreview = null;
+      showPreviewError();
+    }
+  }, 800);
+}
 
     onValue(tasksRef, (snapshot) => {
       const data = snapshot.val() || {};
@@ -1849,29 +2218,64 @@
       ` : '';
       
       let linkBlock = '';
-      if (linkValid) {
-        if (preview && (preview.image || preview.title)) {
-          const img = preview.image ? `<img class="detail-link-image" src="${escapeHtml(preview.image)}" onerror="this.style.display='none'">` : '';
-          const logoImg = preview.logo ? `<img src="${escapeHtml(preview.logo)}" onerror="this.style.display='none'">` : '';
-          linkBlock = `
-            <div class="detail-link-card" onclick="openLink('${escapeHtml(task.link)}')">
-              ${img}
-              <div class="detail-link-body">
-                <div class="detail-link-title">${escapeHtml(preview.title || task.link)}</div>
-                ${preview.description ? `<div class="detail-link-desc">${escapeHtml(preview.description)}</div>` : ''}
-                <div class="detail-link-url">${logoImg}🔗 ${escapeHtml(preview.domain || task.link)}</div>
-              </div>
-            </div>
-          `;
-        } else {
-          linkBlock = `
-            <div class="detail-section">
-              <div class="detail-section-title">🔗 Ссылка</div>
-              <div class="detail-link" onclick="openLink('${escapeHtml(task.link)}')">🌐 <span>${escapeHtml(task.link)}</span></div>
-            </div>
-          `;
-        }
-      }
+      let linkBlock = '';
+if (linkValid) {
+  if (preview?.isTmdb) {
+    const meta = [];
+    if (preview.tmdbRating) meta.push(`⭐ ${preview.tmdbRating}`);
+    if (preview.tmdbRuntime) meta.push(preview.tmdbRuntime);
+    if (preview.tmdbSeasons) meta.push(preview.tmdbSeasons);
+    if (preview.tmdbKnownFor) meta.push(preview.tmdbKnownFor);
+    
+    const typeLabel = preview.tmdbType === 'movie' ? '🎬 Фильм' : preview.tmdbType === 'tv' ? '📺 Сериал' : '👤 Персона';
+    const bg = preview.backdrop || preview.image;
+    
+    linkBlock = `
+      <div class="tmdb-detail-card" onclick="openLink('${escapeHtml(task.link)}')">
+        ${bg ? `<div class="tmdb-detail-backdrop" style="background-image:url('${escapeHtml(bg)}')"></div>` : ''}
+        <div class="tmdb-detail-content">
+          ${preview.image ? `<img class="tmdb-detail-poster" src="${escapeHtml(preview.image)}" onerror="this.style.display='none'">` : ''}
+          <div class="tmdb-detail-info">
+            <div class="tmdb-detail-type">${typeLabel}</div>
+            <div class="tmdb-detail-title">${escapeHtml(preview.title)}</div>
+            ${preview.tmdbTagline ? `<div class="tmdb-detail-tagline">«${escapeHtml(preview.tmdbTagline)}»</div>` : ''}
+            ${meta.length ? `<div class="tmdb-detail-meta">${meta.join(' • ')}</div>` : ''}
+            ${preview.tmdbGenres ? `<div class="tmdb-detail-genres">${escapeHtml(preview.tmdbGenres)}</div>` : ''}
+          </div>
+        </div>
+        ${preview.description ? `
+          <div class="tmdb-detail-desc">
+            <div class="detail-section-title">📖 Описание</div>
+            <div class="detail-text">${escapeHtml(preview.description)}</div>
+          </div>
+        ` : ''}
+        <div class="tmdb-detail-footer">
+          🎬 Открыть на TMDB →
+        </div>
+      </div>
+    `;
+  } else if (preview && (preview.image || preview.title)) {
+    const img = preview.image ? `<img class="detail-link-image" src="${escapeHtml(preview.image)}" onerror="this.style.display='none'">` : '';
+    const logoImg = preview.logo ? `<img src="${escapeHtml(preview.logo)}" onerror="this.style.display='none'">` : '';
+    linkBlock = `
+      <div class="detail-link-card" onclick="openLink('${escapeHtml(task.link)}')">
+        ${img}
+        <div class="detail-link-body">
+          <div class="detail-link-title">${escapeHtml(preview.title || task.link)}</div>
+          ${preview.description ? `<div class="detail-link-desc">${escapeHtml(preview.description)}</div>` : ''}
+          <div class="detail-link-url">${logoImg}🔗 ${escapeHtml(preview.domain || task.link)}</div>
+        </div>
+      </div>
+    `;
+  } else {
+    linkBlock = `
+      <div class="detail-section">
+        <div class="detail-section-title">🔗 Ссылка</div>
+        <div class="detail-link" onclick="openLink('${escapeHtml(task.link)}')">🌐 <span>${escapeHtml(task.link)}</span></div>
+      </div>
+    `;
+  }
+}
       
       const emoji = task.done ? '✅ ' : task.vetoed ? '✋ ' : isMineCategory ? '🔍 ' : '🔬 ';
       
@@ -1991,44 +2395,48 @@
     };
 
     window.editTask = function(id) {
-      const task = tasks.find(t => t.id === id);
-      if (!task) return;
-      editingTaskId = id;
-      selectedCategory = task.category || 'active';
-      currentPreview = task.preview || null;
-      document.getElementById('edit-title').textContent = '✏ Изменить';
-      document.getElementById('task-input').value = task.title || '';
-      document.getElementById('task-why').value = task.why || '';
-      document.getElementById('task-link').value = task.link || '';
-      selectCategory(selectedCategory);
-      renderLinkPreview(currentPreview);
-      closeDetailAnimated();
-      setTimeout(() => {
-        document.getElementById('edit-modal').classList.add('active');
-        document.getElementById('task-input').focus();
-      }, 250);
-    };
+  const task = tasks.find(t => t.id === id);
+  if (!task) return;
+  editingTaskId = id;
+  selectedCategory = task.category || 'active';
+  currentPreview = task.preview || null;
+  lastSearchedTitle = task.title || '';
+  document.getElementById('edit-title').textContent = '✏ Изменить';
+  document.getElementById('task-input').value = task.title || '';
+  document.getElementById('task-why').value = task.why || '';
+  document.getElementById('task-link').value = task.link || '';
+  selectCategory(selectedCategory);
+  renderLinkPreview(currentPreview);
+  closeDetailAnimated();
+  setTimeout(() => {
+    document.getElementById('edit-modal').classList.add('active');
+    document.getElementById('task-input').focus();
+  }, 250);
+};
 
     window.openAddModal = function() {
-      editingTaskId = null;
-      selectedCategory = currentFilter === 'mine' ? 'mine' : 'active';
-      currentPreview = null;
-      document.getElementById('edit-title').textContent = '✨ Предложить посмотреть';
-      document.getElementById('task-input').value = '';
-      document.getElementById('task-why').value = '';
-      document.getElementById('task-link').value = '';
-      selectCategory(selectedCategory);
-      renderLinkPreview(null);
-      document.getElementById('edit-modal').classList.add('active');
-      setTimeout(() => document.getElementById('task-input').focus(), 100);
-    };
+  editingTaskId = null;
+  selectedCategory = currentFilter === 'mine' ? 'mine' : 'active';
+  currentPreview = null;
+  lastSearchedTitle = '';
+  document.getElementById('edit-title').textContent = '✨ Новая задача';
+  document.getElementById('task-input').value = '';
+  document.getElementById('task-why').value = '';
+  document.getElementById('task-link').value = '';
+  selectCategory(selectedCategory);
+  renderLinkPreview(null);
+  document.getElementById('edit-modal').classList.add('active');
+  setTimeout(() => document.getElementById('task-input').focus(), 100);
+};
 
     window.closeEditModal = function() {
-      document.getElementById('edit-modal').classList.remove('active');
-      editingTaskId = null;
-      currentPreview = null;
-      clearTimeout(previewDebounce);
-    };
+  document.getElementById('edit-modal').classList.remove('active');
+  editingTaskId = null;
+  currentPreview = null;
+  lastSearchedTitle = '';
+  clearTimeout(previewDebounce);
+  clearTimeout(titleDebounce);
+};
 
     window.saveTask = async function() {
       const title = document.getElementById('task-input').value.trim();
@@ -2085,11 +2493,55 @@
     });
 
     document.getElementById('task-input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveTask(); }
-    });
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveTask(); }
+});
 
-    document.getElementById('task-link').addEventListener('input', handleLinkInput);
-    document.getElementById('task-link').addEventListener('paste', () => setTimeout(handleLinkInput, 50));
+// Автопоиск по названию в TMDB
+document.getElementById('task-input').addEventListener('input', () => {
+  clearTimeout(titleDebounce);
+  const title = document.getElementById('task-input').value.trim();
+  
+  // Если введена TMDB-ссылка — она имеет приоритет
+  const linkUrl = document.getElementById('task-link').value.trim();
+  if (linkUrl && parseTmdbUrl(linkUrl)) return;
+  
+  if (title.length < 2) {
+    if (lastSearchedTitle && !linkUrl) {
+      currentPreview = null;
+      renderLinkPreview(null);
+    }
+    lastSearchedTitle = '';
+    return;
+  }
+  
+  titleDebounce = setTimeout(async () => {
+    if (title === lastSearchedTitle) return;
+    lastSearchedTitle = title;
+    
+    showPreviewLoading('Ищем на TMDB...');
+    const tmdbResult = await searchTmdbByTitle(title);
+    
+    // Название изменилось за время запроса — игнорируем
+    if (document.getElementById('task-input').value.trim() !== title) return;
+    
+    if (tmdbResult) {
+      currentPreview = tmdbResult;
+      renderLinkPreview(tmdbResult);
+    } else {
+      // Не нашли в TMDB — если есть ссылка, показываем её превью
+      const linkNow = document.getElementById('task-link').value.trim();
+      if (linkNow) {
+        handleLinkInput();
+      } else {
+        currentPreview = null;
+        renderLinkPreview(null);
+      }
+    }
+  }, 700);
+});
+
+document.getElementById('task-link').addEventListener('input', handleLinkInput);
+document.getElementById('task-link').addEventListener('paste', () => setTimeout(handleLinkInput, 50));
 
     if (tg?.BackButton) {
       tg.BackButton.onClick(() => {
