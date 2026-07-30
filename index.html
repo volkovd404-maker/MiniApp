@@ -1374,7 +1374,7 @@
       </div>
       <div class="stat-card stat-mine">
         <div class="stat-value" id="stat-mine">0</div>
-        <div class="stat-label">🔍 поиск</div>
+        <div class="stat-label">🎭 Сериалы</div>
       </div>
       <div class="stat-card stat-done">
         <div class="stat-value" id="stat-done">0</div>
@@ -1399,14 +1399,14 @@
           <span class="popcorn-piece">🌽</span>
           <span class="popcorn-piece">🌽</span>
         </div>
-        <div class="popcorn-text">Готовим задачи...</div>
+        <div class="popcorn-text">Готовим фильмы...</div>
       </div>
     </div>
   </div>
   
   <button class="add-btn" onclick="openAddModal()">
     <span class="add-btn-icon">+</span>
-    Новый фильм
+    Что смотрим
   </button>
   
   <div id="edit-modal" class="modal">
@@ -1425,7 +1425,7 @@
       <div class="category-desc" id="category-desc">Фильм для семейного просмотра</div>
       
       <label>Название</label>
-      <input id="task-input" type="text" placeholder="Введите название фильма или задачи..." maxlength="150">
+      <input id="task-input" type="text" placeholder="Введите название фильма или сериала..." maxlength="150">
       
       <div id="link-preview" class="link-preview"></div>
       
@@ -2035,9 +2035,9 @@ if (tg) {
       if (list.length === 0) {
         let emptyText = 'Здесь пока пусто';
         let emptySub = 'Предложите первый фильм!';
-        if (currentFilter === 'mine') { emptyText = 'Нет сериалов для просмотра'; emptySub = 'Добавьте сериал на просмотр'; }
+        if (currentFilter === 'mine') { emptyText = 'Нет сериалов для просмотра'; emptySub = 'Добавьте что-то на просмотр'; }
         else if (currentFilter === 'done') { emptyText = 'Ещё ничего не посмотрели'; emptySub = 'Отметьте первый просмотренный фильм'; }
-        else if (currentFilter === 'vetoed') { emptyText = 'Нет задач с вето'; emptySub = 'Все фильмы скоро посмотрим — отлично!'; }
+        else if (currentFilter === 'vetoed') { emptyText = 'Нет фильмов с вето'; emptySub = 'Ничего тут нет — отлично!'; }
         container.innerHTML = `
           <div class="empty">
             <span class="empty-emoji">🌱</span>
@@ -2072,7 +2072,7 @@ if (tg) {
           const tmdbLabel = task.preview.tmdbType === 'movie' ? 'фильм' : task.preview.tmdbType === 'tv' ? 'сериал' : 'персона';
           badges.push(`<span class="badge-pill badge-tmdb">${tmdbEmoji} ${tmdbLabel}${task.preview.tmdbRating ? ' ⭐' + task.preview.tmdbRating : ''}</span>`);
         }
-        if (isMineCategory && !task.done) badges.push('<span class="badge-pill badge-category-mine">🔍 поиск</span>');
+        if (isMineCategory && !task.done) badges.push('<span class="badge-pill badge-category-mine">🎭 Сериалы</span>');
         if (hasWhy) badges.push('<span class="badge-pill">📝 описание</span>');
         if (hasLink && !isTmdb) badges.push('<span class="badge-pill">🔗 ссылка</span>');
         
