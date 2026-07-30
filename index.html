@@ -681,34 +681,41 @@
     }
 
     .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(26, 26, 46, 0.5);
-      backdrop-filter: blur(4px);
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 100;
-    }
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 26, 46, 0.5);
+  backdrop-filter: blur(4px);
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  /* Высота = реальная видимая область (учитывает клавиатуру) */
+  height: 100vh;
+  height: 100dvh;
+  height: var(--tg-viewport-height, 100dvh);
+}
 
-    .modal.active { display: flex; animation: fadeIn 0.2s ease; }
+.modal.active { display: flex; animation: fadeIn 0.2s ease; }
 
     @keyframes fadeIn {
       from { opacity: 0; } to { opacity: 1; }
     }
 
     .modal-content {
-      background: linear-gradient(180deg, var(--bg-start) 0%, #ffffff 20%);
-      border-radius: 28px 28px 0 0;
-      padding: 28px 22px calc(22px + env(safe-area-inset-bottom, 0px));
-      max-width: 500px;
-      width: 100%;
-      max-height: 92vh;
-      overflow-y: auto;
-      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      touch-action: pan-y;
-    }
+  background: linear-gradient(180deg, var(--bg-start) 0%, #ffffff 20%);
+  border-radius: 28px 28px 0 0;
+  padding: 28px 22px calc(22px + env(safe-area-inset-bottom, 0px));
+  max-width: 500px;
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  touch-action: pan-y;
+  /* Плавная прокрутка к активному полю */
+  scroll-padding-bottom: 100px;
+}
 
     .modal-content::before {
       content: '';
@@ -1436,9 +1443,11 @@
       <input id="task-link" type="url" placeholder="https://..." maxlength="500">
       
       <div class="modal-buttons">
-        <button class="btn-cancel" onclick="closeEditModal()">Отмена</button>
-        <button class="btn-save" onclick="saveTask()">Сохранить ✨</button>
-      </div>
+  <button class="btn-cancel" onclick="closeEditModal()">Отмена</button>
+  <button class="btn-save" onclick="saveTask()">Сохранить ✨</button>
+</div>
+<!-- Спейсер: даёт возможность проскроллить последнее поле выше клавиатуры -->
+<div style="height: 40px;"></div>
     </div>
   </div>
 
@@ -1502,6 +1511,63 @@ if (tg) {
     document.body.style.display = '';
   });
 }
+    // === Обработка клавиатуры и viewport ===
+
+// Устанавливаем CSS-переменную с высотой viewport от Telegram
+function updateViewportHeight() {
+  if (tg?.viewportHeight) {
+    document.documentElement.style.setProperty(
+      '--tg-viewport-height', 
+      tg.viewportHeight + 'px'
+    );
+    document.documentElement.style.setProperty(
+      '--tg-viewport-stable-height', 
+      (tg.viewportStableHeight || tg.viewportHeight) + 'px'
+    );
+  }
+}
+
+updateViewportHeight();
+
+// Реагируем на изменение viewport (открытие/закрытие клавиатуры)
+if (tg) {
+  tg.onEvent?.('viewportChanged', () => {
+    updateViewportHeight();
+    // Если открыто поле — скроллим к нему
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+      setTimeout(() => {
+        active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  });
+}
+
+// Fallback для браузеров: visualViewport API
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    const vh = window.visualViewport.height;
+    document.documentElement.style.setProperty('--tg-viewport-height', vh + 'px');
+    
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+      setTimeout(() => {
+        active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+    }
+  });
+}
+
+// Автоскролл к полю при фокусе (для всех input/textarea в модалках)
+document.addEventListener('focusin', (e) => {
+  const target = e.target;
+  if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') return;
+  
+  // Ждём открытия клавиатуры
+  setTimeout(() => {
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 300);
+});
     setupAvatar();
 
     function setupAvatar() {
