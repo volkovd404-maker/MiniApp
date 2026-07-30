@@ -51,11 +51,14 @@
     }
 
     body {
-      padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(110px + env(safe-area-inset-bottom, 0px));
-      -webkit-tap-highlight-color: transparent;
-      min-height: 100vh;
-      min-height: 100dvh;
-    }
+  padding-top: calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 16px);
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+  -webkit-tap-highlight-color: transparent;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
 
     .container { max-width: 600px; margin: 0 auto; }
 
@@ -1320,21 +1323,21 @@
     }
 
     .toast {
-      position: fixed;
-      top: calc(20px + env(safe-area-inset-top, 0px));
-      left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      background: var(--text);
-      color: white;
-      padding: 14px 20px;
-      border-radius: 14px;
-      font-size: 14px;
-      font-weight: 600;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-      z-index: 1000;
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      max-width: 90%;
-    }
+  position: fixed;
+  top: calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: var(--text);
+  color: white;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 1000;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 90%;
+}
     .toast.show {
       transform: translateX(-50%) translateY(0);
     }
@@ -1485,7 +1488,20 @@
         tg.setBackgroundColor('#FFF5E6');
       } catch(e) {}
     }
-
+// Обновлять безопасные зоны при изменении fullscreen
+if (tg) {
+  tg.onEvent?.('safeAreaChanged', () => {
+    // Telegram сам обновит CSS-переменные — просто триггерим repaint
+    document.body.style.display = 'none';
+    document.body.offsetHeight;
+    document.body.style.display = '';
+  });
+  tg.onEvent?.('contentSafeAreaChanged', () => {
+    document.body.style.display = 'none';
+    document.body.offsetHeight;
+    document.body.style.display = '';
+  });
+}
     setupAvatar();
 
     function setupAvatar() {
