@@ -689,10 +689,22 @@
   align-items: flex-end;
   justify-content: center;
   z-index: 100;
-  /* Высота = реальная видимая область (учитывает клавиатуру) */
   height: 100vh;
   height: 100dvh;
   height: var(--tg-viewport-height, 100dvh);
+}
+
+/* Продолжение фона модалки под клавиатурой — убирает "просвет" */
+.modal.active::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 200px;
+  background: white;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .modal.active { display: flex; animation: fadeIn 0.2s ease; }
@@ -704,17 +716,19 @@
     .modal-content {
   background: linear-gradient(180deg, var(--bg-start) 0%, #ffffff 20%);
   border-radius: 28px 28px 0 0;
-  padding: 28px 22px calc(22px + env(safe-area-inset-bottom, 0px));
+  padding: 28px 22px calc(40px + env(safe-area-inset-bottom, 0px));
   max-width: 500px;
   width: 100%;
+  /* Растягиваем модалку до самого низа viewport'а */
+  min-height: 60vh;
   max-height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   touch-action: pan-y;
-  /* Плавная прокрутка к активному полю */
-  scroll-padding-bottom: 100px;
+  scroll-padding-bottom: 120px;
 }
 
     .modal-content::before {
@@ -2514,28 +2528,30 @@ document.addEventListener('focusin', (e) => {
     };
 
     window.openAddModal = function() {
-      editingTaskId = null;
-      selectedCategory = currentFilter === 'mine' ? 'mine' : 'active';
-      currentPreview = null;
-      lastSearchedTitle = '';
-      document.getElementById('edit-title').textContent = '✨ Что смотрим?';
-      document.getElementById('task-input').value = '';
-      document.getElementById('task-why').value = '';
-      document.getElementById('task-link').value = '';
-      selectCategory(selectedCategory);
-      renderLinkPreview(null);
-      document.getElementById('edit-modal').classList.add('active');
-      setTimeout(() => document.getElementById('task-input').focus(), 100);
-    };
+  editingTaskId = null;
+  selectedCategory = currentFilter === 'mine' ? 'mine' : 'active';
+  currentPreview = null;
+  lastSearchedTitle = '';
+  document.getElementById('edit-title').textContent = '✨ Новая задача';
+  document.getElementById('task-input').value = '';
+  document.getElementById('task-why').value = '';
+  document.getElementById('task-link').value = '';
+  selectCategory(selectedCategory);
+  renderLinkPreview(null);
+  document.getElementById('edit-modal').classList.add('active');
+  document.body.style.overflow = 'hidden';  // ← блокируем скролл body
+  setTimeout(() => document.getElementById('task-input').focus(), 100);
+};
 
     window.closeEditModal = function() {
-      document.getElementById('edit-modal').classList.remove('active');
-      editingTaskId = null;
-      currentPreview = null;
-      lastSearchedTitle = '';
-      clearTimeout(previewDebounce);
-      clearTimeout(titleDebounce);
-    };
+  document.getElementById('edit-modal').classList.remove('active');
+  document.body.style.overflow = '';  // ← возвращаем скролл
+  editingTaskId = null;
+  currentPreview = null;
+  lastSearchedTitle = '';
+  clearTimeout(previewDebounce);
+  clearTimeout(titleDebounce);
+};
 
     window.saveTask = async function() {
       const title = document.getElementById('task-input').value.trim();
