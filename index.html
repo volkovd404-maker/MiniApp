@@ -1446,15 +1446,18 @@
       <div class="category-desc" id="category-desc">Фильм для семейного просмотра</div>
       
       <label>Название</label>
-      <input id="task-input" type="text" placeholder="Введите название фильма или сериала..." maxlength="150">
-      
-      <div id="link-preview" class="link-preview"></div>
-      
-      <label>💡 Почему это нужно смотреть</label>
-      <textarea id="task-why" rows="3" placeholder="Обоснование, польза, контекст..." maxlength="1000"></textarea>
-      
-      <label>🔗 Ссылка (необязательно)</label>
-      <input id="task-link" type="url" placeholder="https://..." maxlength="500">
+<input id="task-input" type="text" placeholder="Введите название фильма или задачи..." 
+       maxlength="150" enterkeyhint="next">
+
+<div id="link-preview" class="link-preview"></div>
+
+<label>💡 Почему это важно</label>
+<textarea id="task-why" rows="3" placeholder="Обоснование, польза, контекст..." 
+          maxlength="1000" enterkeyhint="next"></textarea>
+
+<label>🔗 Ссылка (необязательно)</label>
+<input id="task-link" type="url" placeholder="https://..." maxlength="500"
+       enterkeyhint="done" autocapitalize="off">
       
       <div class="modal-buttons">
   <button class="btn-cancel" onclick="closeEditModal()">Отмена</button>
@@ -2617,9 +2620,39 @@ document.addEventListener('focusin', (e) => {
       if (e.target.id === 'detail-modal') closeDetailAnimated();
     });
 
-    document.getElementById('task-input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveTask(); }
+    // === Умный Enter: переход по полям, на последнем — закрытие клавиатуры ===
+function setupSmartEnter() {
+  const fields = [
+    document.getElementById('task-input'),   // 1. Название
+    document.getElementById('task-why'),     // 2. Почему это важно
+    document.getElementById('task-link')     // 3. Ссылка
+    
+  ].filter(Boolean);
+  
+  fields.forEach((field, index) => {
+    field.addEventListener('keydown', (e) => {
+      // Shift+Enter в textarea = обычный перенос строки
+      if (field.tagName === 'TEXTAREA' && e.shiftKey && e.key === 'Enter') {
+        return;
+      }
+      
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const isLast = index === fields.length - 1;
+        
+        if (isLast) {
+          // На последнем поле — сворачиваем клавиатуру
+          field.blur();
+        } else {
+          // Переходим к следующему полю
+          fields[index + 1].focus();
+        }
+      }
     });
+  });
+}
+
+setupSmartEnter();
 
     document.getElementById('task-input').addEventListener('input', () => {
       clearTimeout(titleDebounce);
