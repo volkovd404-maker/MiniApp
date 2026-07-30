@@ -2066,7 +2066,7 @@ document.addEventListener('focusin', (e) => {
       
       container.innerHTML = `
         <div class="today-card" onclick="openDetail('${task.id}')">
-          <div class="today-header">🎯 Фильм дня</div>
+          <div class="today-header">🎯 Фильм этих выходных</div>
           <div class="today-title">${escapeHtml(task.title)}</div>
           <div class="today-meta">
             <span>📅 создан ${ageText} назад</span>
@@ -2240,8 +2240,8 @@ document.addEventListener('focusin', (e) => {
       if (!task) return;
       const newState = !task.vetoed;
       const confirmMsg = newState 
-        ? `Наложить вето на задачу «${task.title}»? Она не будет браться в работу.`
-        : `Снять вето с задачи «${task.title}»?`;
+        ? `Наложить вето на фильм «${task.title}»? Не будем это смотреть.`
+        : `Снять вето с фильма «${task.title}»?`;
       const doIt = async () => {
         haptic('success');
         await update(ref(db, `tasks/${id}`), {
@@ -2499,7 +2499,7 @@ document.addEventListener('focusin', (e) => {
     window.deleteTask = async function(id) {
       const task = tasks.find(t => t.id === id);
       if (!task) return;
-      const msg = 'Удалить задачу «' + task.title + '»?';
+      const msg = 'Удалить фильм «' + task.title + '»?';
       const doIt = async () => {
         await remove(ref(db, `tasks/${id}`));
         closeDetailAnimated();
@@ -2535,7 +2535,7 @@ document.addEventListener('focusin', (e) => {
   selectedCategory = currentFilter === 'mine' ? 'mine' : 'active';
   currentPreview = null;
   lastSearchedTitle = '';
-  document.getElementById('edit-title').textContent = '✨ Новая задача';
+  document.getElementById('edit-title').textContent = '✨ Новый фильм';
   document.getElementById('task-input').value = '';
   document.getElementById('task-why').value = '';
   document.getElementById('task-link').value = '';
