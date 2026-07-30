@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Задачи команды</title>
+  <title>🍿 Семейный вечер</title>
   
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   
@@ -1349,7 +1349,7 @@
 
   <div class="container">
     <header>
-      <h1>🚀 Задачи</h1>
+      <h1>🍿 Семейный вечер</h1>
       <div id="user-info" class="user-info">
         <div id="avatar" class="avatar">?</div>
         <span id="user-name" class="user-name">...</span>
@@ -1360,7 +1360,7 @@
       <div class="month-icon">🏆</div>
       <div class="month-info">
         <div class="month-value" id="stat-month">0</div>
-        <div class="month-label">закрыто в этом месяце</div>
+        <div class="month-label">Посмотрели в этом месяце</div>
         <div class="month-name" id="month-name">Загрузка...</div>
       </div>
     </div>
@@ -1370,7 +1370,7 @@
     <div class="stats">
       <div class="stat-card stat-active">
         <div class="stat-value" id="stat-active">0</div>
-        <div class="stat-label">🔬 исследования</div>
+        <div class="stat-label">🎬 Фильмы</div>
       </div>
       <div class="stat-card stat-mine">
         <div class="stat-value" id="stat-mine">0</div>
@@ -1378,14 +1378,14 @@
       </div>
       <div class="stat-card stat-done">
         <div class="stat-value" id="stat-done">0</div>
-        <div class="stat-label">✅ готово</div>
+        <div class="stat-label">✅ Глянули</div>
       </div>
     </div>
     
     <div class="filters">
-      <button class="filter active" data-filter="active" onclick="setFilter('active')">🔬 Исследования</button>
-      <button class="filter" data-filter="mine" onclick="setFilter('mine')">🔍 Поиск</button>
-      <button class="filter" data-filter="done" onclick="setFilter('done')">✅ Готово</button>
+      <button class="filter active" data-filter="active" onclick="setFilter('active')">🎬 Фильмы</button>
+      <button class="filter" data-filter="mine" onclick="setFilter('mine')">🎭 Сериалы</button>
+      <button class="filter" data-filter="done" onclick="setFilter('done')">✅ Глянули</button>
       <button class="filter" data-filter="vetoed" onclick="setFilter('vetoed')">✋ Вето</button>
     </div>
     
@@ -1406,30 +1406,30 @@
   
   <button class="add-btn" onclick="openAddModal()">
     <span class="add-btn-icon">+</span>
-    Новая задача
+    Новый фильм
   </button>
   
   <div id="edit-modal" class="modal">
     <div class="modal-content">
-      <h2 id="edit-title">✨ Новая задача</h2>
+      <h2 id="edit-title">✨ Что смотрим</h2>
       
       <label>📂 Категория</label>
       <div class="category-switch">
         <button type="button" class="category-option active" data-value="active" onclick="selectCategory('active')">
-          🔬 Исследования
+          🎬 Фильмы
         </button>
         <button type="button" class="category-option" data-value="mine" onclick="selectCategory('mine')">
-          🔍 Поиск
+          🎭 Сериалы
         </button>
       </div>
-      <div class="category-desc" id="category-desc">Задача для командного исследования</div>
+      <div class="category-desc" id="category-desc">Фильм для семейного просмотра</div>
       
       <label>Название</label>
       <input id="task-input" type="text" placeholder="Введите название фильма или задачи..." maxlength="150">
       
       <div id="link-preview" class="link-preview"></div>
       
-      <label>💡 Почему это важно</label>
+      <label>💡 Почему это нужно смотреть</label>
       <textarea id="task-why" rows="3" placeholder="Обоснование, польза, контекст..." maxlength="1000"></textarea>
       
       <label>🔗 Ссылка (необязательно)</label>
@@ -1866,8 +1866,8 @@ if (tg) {
         b.classList.toggle('active', b.dataset.value === cat);
       });
       const desc = document.getElementById('category-desc');
-      if (cat === 'active') desc.textContent = 'Задача для командного исследования — все могут голосовать';
-      else desc.textContent = 'Задача для поиска решений или информации';
+      if (cat === 'active') desc.textContent = 'Фильм для семейного просмотра — все могут голосовать';
+      else desc.textContent = 'Сериал для просмотра';
       haptic('light');
     };
 
@@ -1962,11 +1962,11 @@ if (tg) {
         container.innerHTML = `
           <div class="today-empty">
             <div class="today-empty-title">
-              🎯 Нет активных исследований
+              🎯 Нет фильмов на просмотр
             </div>
             <div class="today-empty-next">
               <div class="today-empty-next-label">
-                🔔 Ближайшее напоминание
+                🔔 Ближайший просмотр
               </div>
               <div class="today-empty-next-time">${next.timeText}</div>
               <div class="today-empty-next-countdown">${next.countdown}</div>
@@ -1983,15 +1983,15 @@ if (tg) {
       
       container.innerHTML = `
         <div class="today-card" onclick="openDetail('${task.id}')">
-          <div class="today-header">🎯 Задача дня</div>
+          <div class="today-header">🎯 Фильм дня</div>
           <div class="today-title">${escapeHtml(task.title)}</div>
           <div class="today-meta">
-            <span>📅 создана ${ageText} назад</span>
+            <span>📅 создан ${ageText} назад</span>
             <span>•</span>
             <span>👍 ${task.votes}</span>
           </div>
           <button class="today-notify-btn" onclick="event.stopPropagation(); notifyGroup('${task.id}')">
-            📢 Напомнить в группу
+            📢 Напомнить в личку
           </button>
         </div>
       `;
@@ -2028,16 +2028,16 @@ if (tg) {
       container.innerHTML = '';
       
       if (!tasksLoaded) {
-        container.innerHTML = popcornLoaderHtml('Готовим задачи...');
+        container.innerHTML = popcornLoaderHtml('Готовим фильмы...');
         return;
       }
       
       if (list.length === 0) {
         let emptyText = 'Здесь пока пусто';
-        let emptySub = 'Предложите первую задачу!';
-        if (currentFilter === 'mine') { emptyText = 'Нет задач в поиске'; emptySub = 'Добавьте задачу в категории «Поиск»'; }
-        else if (currentFilter === 'done') { emptyText = 'Ещё ничего не сделано'; emptySub = 'Отметьте первую готовую задачу'; }
-        else if (currentFilter === 'vetoed') { emptyText = 'Нет задач с вето'; emptySub = 'Все задачи в работе — отлично!'; }
+        let emptySub = 'Предложите первый фильм!';
+        if (currentFilter === 'mine') { emptyText = 'Нет сериалов для просмотра'; emptySub = 'Добавьте сериал на просмотр'; }
+        else if (currentFilter === 'done') { emptyText = 'Ещё ничего не посмотрели'; emptySub = 'Отметьте первый просмотренный фильм'; }
+        else if (currentFilter === 'vetoed') { emptyText = 'Нет задач с вето'; emptySub = 'Все фильмы скоро посмотрим — отлично!'; }
         container.innerHTML = `
           <div class="empty">
             <span class="empty-emoji">🌱</span>
@@ -2186,7 +2186,7 @@ if (tg) {
         ? Math.floor((Date.now() - task.createdAt) / (1000 * 60 * 60 * 24))
         : 0;
       
-      const text = `🎯 Задача дня\n\n${task.title}\n\n` +
+      const text = `🎯 Фильм дня\n\n${task.title}\n\n` +
         (task.why ? `💡 ${task.why}\n\n` : '') +
         `👍 голосов: ${task.votes}\n` +
         `📅 В работе: ${daysOld} дн.\n` +
@@ -2233,7 +2233,7 @@ if (tg) {
       
       const vetoBanner = task.vetoed ? `
         <div class="veto-banner">
-          ✋ Вето наложено${task.vetoedBy ? ' пользователем ' + escapeHtml(task.vetoedBy) : ''}. Задача не берётся в работу.
+          ✋ Вето наложено${task.vetoedBy ? ' пользователем ' + escapeHtml(task.vetoedBy) : ''}. Это смотреть мы не будем.
         </div>
       ` : '';
       
@@ -2338,7 +2338,7 @@ if (tg) {
         
         ${!task.vetoed ? `
           <button class="btn-done-big ${task.done ? 'reopen' : ''}" onclick="toggleDoneFromDetail('${task.id}')">
-            ${task.done ? '↩ Вернуть в работу' : '✓ Готово'}
+            ${task.done ? '↩ Вернуть в работу' : '✓ Глянули'}
           </button>
         ` : ''}
         
@@ -2421,7 +2421,7 @@ if (tg) {
         await remove(ref(db, `tasks/${id}`));
         closeDetailAnimated();
         haptic('success');
-        showToast('🗑 Задача удалена');
+        showToast('🗑 Фильм удален');
       };
       if (tg?.showConfirm) tg.showConfirm(msg, (ok) => { if (ok) doIt(); });
       else if (confirm(msg)) doIt();
@@ -2452,7 +2452,7 @@ if (tg) {
       selectedCategory = currentFilter === 'mine' ? 'mine' : 'active';
       currentPreview = null;
       lastSearchedTitle = '';
-      document.getElementById('edit-title').textContent = '✨ Новая задача';
+      document.getElementById('edit-title').textContent = '✨ Что смотрим?';
       document.getElementById('task-input').value = '';
       document.getElementById('task-why').value = '';
       document.getElementById('task-link').value = '';
@@ -2523,7 +2523,7 @@ if (tg) {
           createdAt: Date.now()
         });
         setFilter(selectedCategory);
-        showToast('🎉 Задача добавлена', 'success');
+        showToast('🎉 Фильм добавлен', 'success');
       }
       closeEditModal();
     };
