@@ -2101,25 +2101,21 @@ function showToast(message, type = '', duration = 3000) {
         return;
       }
       
-      const daysOld = task.createdAt 
-        ? Math.floor((Date.now() - task.createdAt) / (1000 * 60 * 60 * 24))
-        : 0;
-      const ageText = daysOld === 0 ? 'сегодня' : daysOld === 1 ? '1 день' : `${daysOld} дн.`;
-      
-      container.innerHTML = `
-        <div class="today-card" onclick="openDetail('${task.id}')">
-          <div class="today-header">🎯 Фильм этих выходных</div>
-          <div class="today-title">${escapeHtml(task.title)}</div>
-          <div class="today-meta">
-            <span>📅 создан ${ageText} назад</span>
-            <span>•</span>
-            <span>👍 ${task.votes}</span>
-          </div>
-          <button class="today-notify-btn" onclick="event.stopPropagation(); notifyGroup('${task.id}')">
-            📢 Напомнить в личку
-          </button>
-        </div>
-      `;
+      const ageText = formatCreatedDate(task.createdAt);
+container.innerHTML = `
+  <div class="today-card" onclick="openDetail('${task.id}')">
+    <div class="today-header">🎯 Фильм этих выходных</div>
+    <div class="today-title">${escapeHtml(task.title)}</div>
+    <div class="today-meta">
+      <span>📅 ${ageText}</span>
+      <span>•</span>
+      <span>👍 ${task.votes}</span>
+    </div>
+    <button class="today-notify-btn" onclick="event.stopPropagation(); notifyGroup('${task.id}')">
+      📢 Напомнить в личку
+    </button>
+  </div>
+`;
     }
 
     function render() {
@@ -2247,7 +2243,46 @@ function showToast(message, type = '', duration = 3000) {
       div.textContent = str || '';
       return div.innerHTML;
     }
-
+function formatCreatedDate(timestamp) {
+  if (!timestamp) return 'Добавлен недавно';
+  
+  // Firebase serverTimestamp может прийти как объект
+  if (typeof timestamp === 'object' && timestamp !== null) {
+    if (timestamp.seconds) timestamp = timestamp.seconds * 1000;
+    else return 'Добавлен недавно';
+  }
+  
+  // Если пришло в секундах (Unix) — переводим в мс
+  if (typeof timestamp === 'number' && timestamp < 10000000000) {
+    timestamp = timestamp * 1000;
+  }
+  
+  const ts = Number(timestamp);
+  if (!ts || isNaN(ts)) return 'Добавлен недавно';
+  
+  // Считаем разницу по календарным дням (не по 24 часам)
+  const now = new Date();
+  const created = new Date(ts);
+  
+  const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const createdDate = new Date(created.getFullYear(), created.getMonth(), created.getDate());
+  const diffDays = Math.floor((nowDate - createdDate) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return 'Добавлен сегодня';
+  if (diffDays === 1) return 'Добавлен вчера';
+  
+  // Правильные окончания для русского языка
+  const lastDigit = diffDays % 10;
+  const lastTwoDigits = diffDays % 100;
+  
+  let word;
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) word = 'дней';
+  else if (lastDigit === 1) word = 'день';
+  else if (lastDigit >= 2 && lastDigit <= 4) word = 'дня';
+  else word = 'дней';
+  
+  return `Добавлен ${diffDays} ${word} назад`;
+}
     function isValidUrl(str) {
       try {
         const url = new URL(str);
