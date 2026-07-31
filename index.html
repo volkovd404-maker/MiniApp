@@ -1347,7 +1347,7 @@
   position: fixed;
   top: calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px) + 20px);
   left: 50%;
-  transform: translateX(-50%) translateY(-100px);
+  transform: translateX(-50%) translateY(-150px);
   background: var(--text);
   color: white;
   padding: 14px 20px;
@@ -1356,14 +1356,22 @@
   font-weight: 600;
   box-shadow: 0 8px 24px rgba(0,0,0,0.2);
   z-index: 1000;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
   max-width: 90%;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
 }
-    .toast.show {
-      transform: translateX(-50%) translateY(0);
-    }
-    .toast.success { background: var(--accent-mint); }
-    .toast.error { background: var(--accent-red); }
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.toast.success { background: var(--accent-mint); }
+.toast.error { background: var(--accent-red); }
   </style>
 </head>
 <body>
@@ -1635,13 +1643,47 @@ document.addEventListener('focusin', (e) => {
       } catch(e) {}
     }
 
-    function showToast(message, type = '') {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.className = 'toast ' + type;
-      requestAnimationFrame(() => toast.classList.add('show'));
-      setTimeout(() => toast.classList.remove('show'), 3000);
+    let toastTimeout = null;
+let toastHideTimeout = null;
+
+function showToast(message, type = '', duration = 3000) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  
+  // Полностью очищаем все предыдущие таймеры
+  if (toastTimeout) { clearTimeout(toastTimeout); toastTimeout = null; }
+  if (toastHideTimeout) { clearTimeout(toastHideTimeout); toastHideTimeout = null; }
+  
+  // Устанавливаем текст и класс
+  toast.textContent = message;
+  toast.className = 'toast ' + type;
+  
+  // Показываем
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+  
+  // Скрываем через duration мс (через requestAnimationFrame — надёжнее в Mini App)
+  const startTime = Date.now();
+  
+  function checkAndHide() {
+    const elapsed = Date.now() - startTime;
+    if (elapsed >= duration) {
+      toast.classList.remove('show');
+      toastTimeout = null;
+      return;
     }
+    toastTimeout = setTimeout(checkAndHide, Math.min(500, duration - elapsed));
+  }
+  
+  toastTimeout = setTimeout(checkAndHide, duration);
+  
+  // Двойная защита: если через duration+500мс класс всё ещё есть — принудительно снимаем
+  toastHideTimeout = setTimeout(() => {
+    toast.classList.remove('show');
+    toastHideTimeout = null;
+  }, duration + 500);
+}
 
     function popcornLoaderHtml(text = 'Загружаем...') {
       return `
