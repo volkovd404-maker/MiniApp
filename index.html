@@ -2346,10 +2346,10 @@
         ? Math.floor((Date.now() - task.createdAt) / (1000 * 60 * 60 * 24))
         : 0;
       
-      const text = `🎯 Фильм дня\n\n${task.title}\n\n` +
+      const text = `🎯 Фильм этих выходных\n\n${task.title}\n\n` +
         (task.why ? `💡 ${task.why}\n\n` : '') +
-        `👍 голосов: ${task.votes}\n` +
-        `📅 В работе: ${daysOld} дн.\n` +
+        `👍 Одобрили: ${task.votes}\n` +
+        `📅 Добавили: ${daysOld} дн.\n` +
         `Автор: ${task.author}` +
         (task.link ? `\n\n🔗 ${task.link}` : '');
       
@@ -2364,7 +2364,7 @@
       
       try {
         await navigator.clipboard.writeText(text);
-        showToast('📋 Напоминание скопировано! Вставьте в чат группы', 'success');
+        showToast('📋 Напоминание скопировано! Вставьте в личку собеседника', 'success');
       } catch(e) {
         if (tg?.showAlert) {
           tg.showAlert('Скопируйте текст:\n\n' + text);
