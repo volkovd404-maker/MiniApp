@@ -1391,10 +1391,101 @@
 
   .toast.success { background: var(--accent-mint); color: white; border-color: var(--accent-mint); }
   .toast.error { background: var(--accent-red); color: white; border-color: var(--accent-red); }
+  /* Онбординг-стили */
+.progress-segment {
+  flex:1; height:3px; background:#2A2D30; border-radius:2px; transition:background 0.3s;
+}
+.progress-segment.active { background:#00A3FF; }
+.progress-segment.done { background:#4A4D55; }
+
+.story-slide {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; text-align:center;
+}
+
+@media (min-width: 600px) {
+  .story-slide h2 { font-size:30px; }
+  .story-slide p { font-size:18px; max-width:420px; }
+}
 </style>
 </head>
 <body>
+<!-- Онбординг-сторис (стиль Frame.io) -->
+<div id="onboarding" style="display:none; position:fixed; inset:0; z-index:9999; background:#0B0D0F; color:#F0F2F5;">
+  <div id="story-container" style="position:relative; width:100%; height:100dvh; overflow:hidden;">
+    
+    <!-- Индикаторы прогресса -->
+    <div id="progress-bar" style="position:absolute; top:20px; left:20px; right:20px; display:flex; gap:6px; z-index:10;">
+      <div class="progress-segment" data-index="0"></div>
+      <div class="progress-segment" data-index="1"></div>
+      <div class="progress-segment" data-index="2"></div>
+    </div>
 
+    <!-- Кнопка пропуска -->
+    <button id="onboarding-skip" style="position:absolute; top:28px; right:20px; background:transparent; color:#8A8F99; border:none; font-size:14px; font-weight:500; cursor:pointer; z-index:10;" onclick="closeOnboarding()">
+      Пропустить →
+    </button>
+
+    <!-- Слайды -->
+    <div id="slides" style="display:flex; width:300%; height:100%; transition:transform 0.5s cubic-bezier(0.16,1,0.3,1);">
+      
+      <!-- Слайд 1: О приложении -->
+      <div class="story-slide" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; text-align:center;">
+        <div style="width:80px; height:80px; background:#1A2A3A; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:40px; margin-bottom:24px; color:#00A3FF;">
+          🍿
+        </div>
+        <h2 style="font-size:26px; font-weight:700; letter-spacing:-0.3px; margin-bottom:12px; color:#F0F2F5;">Семейный вечер</h2>
+        <p style="font-size:16px; color:#C0C4CC; line-height:1.6; max-width:380px;">
+          Приложение для выбора фильмов и сериалов<br>всей семьёй. <strong style="color:#F0F2F5;">Без споров.</strong>
+        </p>
+        <div style="margin-top:24px; padding:8px 16px; background:#1A1C1E; border-radius:8px; font-size:13px; color:#8A8F99; border:1px solid #2A2D30;">
+          👨‍👩‍👧‍👦 Голосуйте и решайте вместе
+        </div>
+      </div>
+
+      <!-- Слайд 2: Как это работает -->
+      <div class="story-slide" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; text-align:center;">
+        <div style="width:80px; height:80px; background:#1A2A3A; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:40px; margin-bottom:24px; color:#00A3FF;">
+          🗳️
+        </div>
+        <h2 style="font-size:26px; font-weight:700; letter-spacing:-0.3px; margin-bottom:12px; color:#F0F2F5;">Голосуйте</h2>
+        <p style="font-size:16px; color:#C0C4CC; line-height:1.6; max-width:380px;">
+          Каждый предлагает фильм или сериал.<br>
+          <strong style="color:#F0F2F5;">Голосуйте 👍</strong> за понравившиеся варианты.<br>
+          Побеждает тот, кто набрал больше голосов.
+        </p>
+        <div style="margin-top:24px; padding:8px 16px; background:#1A1C1E; border-radius:8px; font-size:13px; color:#8A8F99; border:1px solid #2A2D30;">
+          🎯 Демократия в действии
+        </div>
+      </div>
+
+      <!-- Слайд 3: Почему это важно -->
+      <div class="story-slide" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; text-align:center;">
+        <div style="width:80px; height:80px; background:#1A2A3A; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:40px; margin-bottom:24px; color:#00A3FF;">
+          ❤️
+        </div>
+        <h2 style="font-size:26px; font-weight:700; letter-spacing:-0.3px; margin-bottom:12px; color:#F0F2F5;">Больше времени вместе</h2>
+        <p style="font-size:16px; color:#C0C4CC; line-height:1.6; max-width:380px;">
+          Вместо споров — <strong style="color:#F0F2F5;">общий выбор</strong>.<br>
+          Приложение запоминает, что вы уже посмотрели,<br>
+          и ведёт статистику.
+        </p>
+        <div style="margin-top:24px; padding:8px 16px; background:#1A1C1E; border-radius:8px; font-size:13px; color:#8A8F99; border:1px solid #2A2D30;">
+          📈 Уже в этом месяце: <span id="onboarding-month-stats" style="color:#00A3FF; font-weight:600;">0</span> фильмов
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Кнопка "Начать" (появляется на последнем слайде) -->
+    <button id="onboarding-start-btn" style="display:none; position:absolute; bottom:60px; left:50%; transform:translateX(-50%); padding:14px 40px; background:#00A3FF; color:white; border:none; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; z-index:10; transition:background 0.2s;" onclick="closeOnboarding()" onmouseover="this.style.background='#007ACC'" onmouseout="this.style.background='#00A3FF'">
+      Начать
+    </button>
+
+    <!-- Свайп-зона -->
+    <div id="swipe-area" style="position:absolute; inset:0; z-index:5; touch-action:none;"></div>
+
+  </div>
+</div>
   <div class="container">
     <header>
       <h1>🍿 Семейный вечер</h1>
@@ -2783,6 +2874,168 @@
       observer.observe(document.getElementById('edit-modal'), { attributes: true });
       observer.observe(document.getElementById('detail-modal'), { attributes: true });
     }
+    // === Онбординг (стиль Frame.io) ===
+let currentStory = 0;
+let storyTimer = null;
+let storySwipeStartX = 0;
+let storySwipeStartY = 0;
+let isStorySwiping = false;
+
+function showOnboarding() {
+  const onboarding = document.getElementById('onboarding');
+  if (!onboarding) return;
+  
+  // Проверяем, видел ли уже
+  if (localStorage.getItem('onboarding_seen') === 'true') {
+    onboarding.style.display = 'none';
+    return;
+  }
+  
+  // Обновляем статистику в последнем слайде
+  const statEl = document.getElementById('onboarding-month-stats');
+  if (statEl) {
+    const doneThisMonth = tasks.filter(t => {
+      if (!t.done) return false;
+      const doneTime = t.doneAt || t.createdAt || 0;
+      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+      return doneTime >= monthStart;
+    }).length;
+    statEl.textContent = doneThisMonth;
+  }
+  
+  onboarding.style.display = 'block';
+  goToStory(0);
+  startStoryTimer();
+  
+  // Свайпы
+  const swipeArea = document.getElementById('swipe-area');
+  swipeArea.addEventListener('touchstart', onStoryTouchStart, { passive: true });
+  swipeArea.addEventListener('touchmove', onStoryTouchMove, { passive: true });
+  swipeArea.addEventListener('touchend', onStoryTouchEnd, { passive: true });
+  
+  // Клики по краям (для десктопа)
+  swipeArea.addEventListener('click', (e) => {
+    const rect = swipeArea.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    if (x < rect.width * 0.3) prevStory();
+    else if (x > rect.width * 0.7) nextStory();
+  });
+}
+
+function goToStory(index) {
+  const slides = document.getElementById('slides');
+  const segments = document.querySelectorAll('.progress-segment');
+  const startBtn = document.getElementById('onboarding-start-btn');
+  
+  currentStory = Math.max(0, Math.min(index, 2));
+  slides.style.transform = `translateX(-${currentStory * 33.333}%)`;
+  
+  segments.forEach((seg, i) => {
+    seg.classList.remove('active', 'done');
+    if (i < currentStory) seg.classList.add('done');
+    else if (i === currentStory) seg.classList.add('active');
+  });
+  
+  // Кнопка "Начать" только на последнем слайде
+  if (currentStory === 2) {
+    startBtn.style.display = 'block';
+  } else {
+    startBtn.style.display = 'none';
+  }
+}
+
+function nextStory() {
+  stopStoryTimer();
+  if (currentStory < 2) {
+    goToStory(currentStory + 1);
+    startStoryTimer();
+  }
+}
+
+function prevStory() {
+  stopStoryTimer();
+  if (currentStory > 0) {
+    goToStory(currentStory - 1);
+    startStoryTimer();
+  }
+}
+
+function startStoryTimer() {
+  stopStoryTimer();
+  storyTimer = setTimeout(() => {
+    if (currentStory < 2) {
+      nextStory();
+    } else {
+      stopStoryTimer();
+    }
+  }, 4000);
+}
+
+function stopStoryTimer() {
+  if (storyTimer) {
+    clearTimeout(storyTimer);
+    storyTimer = null;
+  }
+}
+
+function onStoryTouchStart(e) {
+  const touch = e.touches[0];
+  storySwipeStartX = touch.clientX;
+  storySwipeStartY = touch.clientY;
+  isStorySwiping = true;
+  stopStoryTimer();
+}
+
+function onStoryTouchMove(e) {
+  if (!isStorySwiping) return;
+  const touch = e.touches[0];
+  const diffX = touch.clientX - storySwipeStartX;
+  const diffY = touch.clientY - storySwipeStartY;
+  
+  if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 20) {
+    const offset = -currentStory * 33.333 + (diffX / window.innerWidth) * 20;
+    document.getElementById('slides').style.transform = `translateX(${offset}%)`;
+    document.getElementById('slides').style.transition = 'none';
+  }
+}
+
+function onStoryTouchEnd(e) {
+  if (!isStorySwiping) return;
+  isStorySwiping = false;
+  const slides = document.getElementById('slides');
+  slides.style.transition = 'transform 0.5s cubic-bezier(0.16,1,0.3,1)';
+  
+  const diffX = e.changedTouches[0].clientX - storySwipeStartX;
+  
+  if (Math.abs(diffX) > 80) {
+    if (diffX < 0) nextStory();
+    else prevStory();
+  } else {
+    goToStory(currentStory);
+  }
+  
+  startStoryTimer();
+}
+
+function closeOnboarding() {
+  localStorage.setItem('onboarding_seen', 'true');
+  const onboarding = document.getElementById('onboarding');
+  onboarding.style.display = 'none';
+  stopStoryTimer();
+  if (window.haptic) haptic('success');
+}
+
+// Запускаем онбординг после загрузки данных
+// Переопределяем render, чтобы добавить вызов онбординга
+const originalRender = window.render;
+window.render = function() {
+  if (typeof originalRender === 'function') {
+    originalRender();
+  }
+  if (tasksLoaded && !localStorage.getItem('onboarding_seen')) {
+    setTimeout(showOnboarding, 500);
+  }
+};
   </script>
 
 </body>
