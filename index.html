@@ -1641,35 +1641,23 @@
     const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
     const TMDB_LANG = 'ru-RU';
 
-    const tg = window.Telegram?.WebApp;
-    const user = tg?.initDataUnsafe?.user;
-    const userId = String(user?.id || 'test_' + Date.now());
-    const userName = user?.first_name || (user?.username ? '@' + user.username : 'Гость');
-    const userPhoto = user?.photo_url || null;
+    // === РАСКРЫТИЕ НА ВЕСЬ ЭКРАН (САМОЕ ВАЖНОЕ) ===
+  const tg = window.Telegram?.WebApp;
+  const user = tg?.initDataUnsafe?.user;
+  const userId = String(user?.id || 'test_' + Date.now());
+  const userName = user?.first_name || (user?.username ? '@' + user.username : 'Гость');
+  const userPhoto = user?.photo_url || null;
 
-    if (tg) { 
-      tg.ready(); 
-      tg.expand();
-      try { tg.requestFullscreen?.(); } catch(e) {}
-      try { tg.disableVerticalSwipes?.(); } catch(e) {}
-      try {
-        tg.setHeaderColor('#0B0D0F');
-        tg.setBackgroundColor('#0B0D0F');
-      } catch(e) {}
-    }
-
-    if (tg) {
-      tg.onEvent?.('safeAreaChanged', () => {
-        document.body.style.display = 'none';
-        document.body.offsetHeight;
-        document.body.style.display = '';
-      });
-      tg.onEvent?.('contentSafeAreaChanged', () => {
-        document.body.style.display = 'none';
-        document.body.offsetHeight;
-        document.body.style.display = '';
-      });
-    }
+  if (tg) {
+    tg.ready();
+    tg.expand(); // ← РАСКРЫВАЕТ НА ВЕСЬ ЭКРАН
+    try { tg.requestFullscreen?.(); } catch(e) {}
+    try { tg.disableVerticalSwipes?.(); } catch(e) {}
+    try {
+      tg.setHeaderColor('#0B0D0F');
+      tg.setBackgroundColor('#0B0D0F');
+    } catch(e) {}
+  }
 
     function updateViewportHeight() {
       if (tg?.viewportHeight) {
@@ -2265,43 +2253,57 @@ if (!familyLoaded) {
   });
 }
 
-    // ============ ЗАГРУЗКА ДАННЫХ ============
+    // ============ ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ============
+async function initApp() {
+  try {
+    // Загружаем семью пользователя
+    let familyLoaded = false;
+    try {
+      familyLoaded = await loadUserFamily();
+    } catch (error) {
+      console.error('Ошибка при загрузке семьи:', error);
+    }
 
-    // Сначала загружаем семью пользователя
-    const familyLoaded = await loadUserFamily();
-    
     if (!familyLoaded) {
       // Показываем экран входа в семью
       document.getElementById('family-entry').style.display = 'flex';
       // Скрываем онбординг, если он уже показан
       document.getElementById('onboarding').style.display = 'none';
-    } else {
-      // Загружаем задачи только для этой семьи
-      const tasksRef = query(
-        ref(db, 'tasks'),
-        orderByChild('familyId'),
-        equalTo(currentFamilyId)
-      );
-      
-      onValue(tasksRef, (snapshot) => {
-        const data = snapshot.val() || {};
-        tasks = Object.entries(data).map(([id, task]) => ({
-          id,
-          ...task,
-          category: task.category || 'active',
-          voters: task.voters || {},
-          vetoed: !!task.vetoed,
-          votes: task.voters ? Object.keys(task.voters).length : 0
-        }));
-        tasksLoaded = true;
-        render();
-        if (currentDetailId) {
-          const t = tasks.find(x => x.id === currentDetailId);
-          if (t) renderDetail(t);
-        }
-      });
+      return; // ❗️ ВАЖНО: выходим, чтобы не загружать задачи
     }
 
+    // Загружаем задачи только для этой семьи
+    const tasksRef = query(
+      ref(db, 'tasks'),
+      orderByChild('familyId'),
+      equalTo(currentFamilyId)
+    );
+    
+    onValue(tasksRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      tasks = Object.entries(data).map(([id, task]) => ({
+        id,
+        ...task,
+        category: task.category || 'active',
+        voters: task.voters || {},
+        vetoed: !!task.vetoed,
+        votes: task.voters ? Object.keys(task.voters).length : 0
+      }));
+      tasksLoaded = true;
+      render();
+      if (currentDetailId) {
+        const t = tasks.find(x => x.id === currentDetailId);
+        if (t) renderDetail(t);
+      }
+    });
+  } catch (error) {
+    console.error('❌ Критическая ошибка при инициализации:', error);
+    showToast('❌ Ошибка загрузки. Проверьте консоль.', 'error');
+  }
+}
+
+// Запускаем приложение
+initApp();
     // ============ ОСТАЛЬНЫЕ ФУНКЦИИ ============
 
     window.setFilter = function(f) {
