@@ -2211,47 +2211,6 @@ function generateInviteCode() {
   return code;
 }
 
-// ============ ЗАГРУЗКА ДАННЫХ (ИСПРАВЛЕННАЯ) ============
-
-// Загружаем семью пользователя
-let familyLoaded = false;
-try {
-  familyLoaded = await loadUserFamily();
-} catch (error) {
-  console.error('Ошибка при загрузке семьи:', error);
-}
-
-if (!familyLoaded) {
-  // Показываем экран входа в семью
-  document.getElementById('family-entry').style.display = 'flex';
-  // Скрываем онбординг, если он уже показан
-  document.getElementById('onboarding').style.display = 'none';
-} else {
-  // Загружаем задачи только для этой семьи
-  const tasksRef = query(
-    ref(db, 'tasks'),
-    orderByChild('familyId'),
-    equalTo(currentFamilyId)
-  );
-  
-  onValue(tasksRef, (snapshot) => {
-    const data = snapshot.val() || {};
-    tasks = Object.entries(data).map(([id, task]) => ({
-      id,
-      ...task,
-      category: task.category || 'active',
-      voters: task.voters || {},
-      vetoed: !!task.vetoed,
-      votes: task.voters ? Object.keys(task.voters).length : 0
-    }));
-    tasksLoaded = true;
-    render();
-    if (currentDetailId) {
-      const t = tasks.find(x => x.id === currentDetailId);
-      if (t) renderDetail(t);
-    }
-  });
-}
 
     // ============ ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ============
 async function initApp() {
