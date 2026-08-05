@@ -2085,251 +2085,185 @@
       }, 800);
     }
 
-    // ============ СЕМЕЙНАЯ ЛОГИКА ============
+    // ============ СЕМЕЙНАЯ ЛОГИКА (ИСПРАВЛЕННАЯ) ============
 
-    async function loadUserFamily() {
-      const userRef = ref(db, `users/${userId}`);
-      const snapshot = await get(userRef);
-      const userData = snapshot.val();
+async function loadUserFamily() {
+  try {
+    const userRef = ref(db, `users/${userId}`);
+    const snapshot = await get(userRef);
+    const userData = snapshot.val();
+    
+    if (userData && userData.familyId) {
+      currentFamilyId = userData.familyId;
+      currentUserRole = userData.role || 'member';
       
-      if (userData && userData.familyId) {
-        currentFamilyId = userData.familyId;
-        currentUserRole = userData.role || 'member';
-        
-        // Загружаем участников семьи
-        const familyRef = ref(db, `families/${currentFamilyId}`);
-        const familySnapshot = await get(familyRef);
-        const familyData = familySnapshot.val();
-        if (familyData && familyData.members) {
-          familyMembers = familyData.members;
-        }
-        return true;
-      }
-      return false;
-    }
-
-    window.joinFamilyByCode = async function() {
-      const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
-      if (!code) {
-        showToast('Введите код-приглашение', 'error');
-        return;
-      }
-      
-      // Ищем семью по коду
-      const familiesRef = ref(db, 'families');
-      const snapshot = await get(familiesRef);
-      const families = snapshot.val() || {};
-      
-      let foundFamilyId = null;
-      for (const [familyId, family] of Object.entries(families)) {
-        if (family.inviteCode === code) {
-          foundFamilyId = familyId;
-          break;
-        }
-      }
-      
-      if (!foundFamilyId) {
-        showToast('❌ Неверный код. Проверьте и попробуйте снова.', 'error');
-        return;
-      }
-      
-      // Проверяем, не забанен ли пользователь
-      const familyRef = ref(db, `families/${foundFamilyId}`);
+      // Загружаем участников семьи
+      const familyRef = ref(db, `families/${currentFamilyId}`);
       const familySnapshot = await get(familyRef);
       const familyData = familySnapshot.val();
-      
-      if (familyData.banned && familyData.banned[userId]) {
-        showToast('⛔ Вас исключили из этой семьи', 'error');
-        return;
+      if (familyData && familyData.members) {
+        familyMembers = familyData.members;
       }
-      
-      // Добавляем пользователя в семью
-      const members = familyData.members || {};
-      if (members[userId]) {
-        showToast('✅ Вы уже в этой семье', 'success');
-      } else {
-        members[userId] = {
-          role: 'member',
-          joinedAt: Date.now()
-        };
-        await update(familyRef, { members });
-      }
-      
-      // Сохраняем привязку у пользователя
-      await update(ref(db, `users/${userId}`), {
-        familyId: foundFamilyId,
-        role: 'member',
-        name: userName
-      });
-      
-      showToast('🎉 Вы присоединились к семье!', 'success');
-      location.reload();
-    };
-
-    window.createFamily = async function() {
-      const familyName = prompt('Введите название вашей семьи (например: Семья Ивановых):');
-      if (!familyName) return;
-      
-      // Генерируем уникальный код
-      const code = generateInviteCode();
-      const familyId = 'family_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
-      
-      // Создаём семью
-      await set(ref(db, `families/${familyId}`), {
-        name: familyName,
-        createdBy: userId,
-        createdAt: Date.now(),
-        inviteCode: code,
-        members: {
-          [userId]: {
-            role: 'admin',
-            joinedAt: Date.now()
-          }
-        }
-      });
-      
-      // Привязываем пользователя
-      await update(ref(db, `users/${userId}`), {
-        familyId: familyId,
-        role: 'admin',
-        name: userName
-      });
-      
-      showToast(`✅ Семья создана! Код: ${code}`, 'success');
-      location.reload();
-    };
-
-    function generateInviteCode() {
-      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      const numbers = '0123456789';
-      let code = '';
-      for (let i = 0; i < 4; i++) code += letters[Math.floor(Math.random() * 26)];
-      for (let i = 0; i < 4; i++) code += numbers[Math.floor(Math.random() * 10)];
-      return code;
+      return true;
     }
+    return false;
+  } catch (error) {
+    console.error('Ошибка загрузки семьи:', error);
+    return false;
+  }
+}
 
-    // Управление семьёй (для админа)
-    window.openFamilySettings = function() {
-      if (currentUserRole !== 'admin') {
-        showToast('Только администратор может управлять семьёй', 'error');
-        return;
+window.joinFamilyByCode = async function() {
+  try {
+    const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
+    if (!code) {
+      showToast('Введите код-приглашение', 'error');
+      return;
+    }
+    
+    // Ищем семью по коду
+    const familiesRef = ref(db, 'families');
+    const snapshot = await get(familiesRef);
+    const families = snapshot.val() || {};
+    
+    let foundFamilyId = null;
+    for (const [familyId, family] of Object.entries(families)) {
+      if (family.inviteCode === code) {
+        foundFamilyId = familyId;
+        break;
       }
-      
-      const modal = document.getElementById('family-modal');
-      const content = document.getElementById('family-content');
-      
-      let membersHtml = '';
-      for (const [memberId, member] of Object.entries(familyMembers)) {
-        const isAdmin = member.role === 'admin';
-        membersHtml += `
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);">
-            <span>${memberId === userId ? '👤 Вы' : `👤 Пользователь ${memberId}`}</span>
-            <div>
-              ${isAdmin ? '<span style="color:var(--brand); font-weight:600;">Админ</span>' : ''}
-              ${memberId !== userId ? `<button onclick="banMember('${memberId}')" style="background:var(--accent-red); color:white; border:none; border-radius:6px; padding:4px 12px; font-size:12px; cursor:pointer;">Исключить</button>` : ''}
-            </div>
-          </div>
-        `;
-      }
-      
-      content.innerHTML = `
-        <h2>🏠 Управление семьёй</h2>
-        
-        <div style="margin-bottom:16px; padding:12px; background:var(--card-alt); border-radius:12px; border:1px solid var(--border);">
-          <div style="font-size:13px; color:var(--hint); margin-bottom:4px;">Код приглашения</div>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <span style="font-size:20px; font-weight:700; letter-spacing:2px; color:var(--brand);">${familyMembers.inviteCode || '---'}</span>
-            <button onclick="copyInviteCode()" style="background:var(--card-alt); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:6px 12px; font-size:12px; cursor:pointer;">📋 Копировать</button>
-            <button onclick="regenerateInviteCode()" style="background:var(--card-alt); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:6px 12px; font-size:12px; cursor:pointer;">🔄 Сменить</button>
-          </div>
-        </div>
-        
-        <div style="margin-bottom:16px;">
-          <div style="font-size:13px; color:var(--hint); margin-bottom:8px;">Участники (${Object.keys(familyMembers).length})</div>
-          ${membersHtml}
-        </div>
-        
-        <div class="modal-buttons" style="margin-top:10px;">
-          <button class="btn-cancel" onclick="closeFamilyModal()">Закрыть</button>
-        </div>
-      `;
-      
-      modal.classList.add('active');
-    };
-
-    window.copyInviteCode = function() {
-      const code = familyMembers.inviteCode || '---';
-      try {
-        navigator.clipboard.writeText(code);
-        showToast('📋 Код скопирован!', 'success');
-      } catch(e) {
-        showToast('Не удалось скопировать', 'error');
-      }
-    };
-
-    window.regenerateInviteCode = async function() {
-      if (currentUserRole !== 'admin') {
-        showToast('Только администратор может сменить код', 'error');
-        return;
-      }
-      
-      const newCode = generateInviteCode();
-      await update(ref(db, `families/${currentFamilyId}`), {
-        inviteCode: newCode
-      });
-      showToast(`✅ Новый код: ${newCode}`, 'success');
-      openFamilySettings();
-    };
-
-    window.banMember = async function(memberId) {
-      if (currentUserRole !== 'admin') {
-        showToast('Только администратор может исключать', 'error');
-        return;
-      }
-      
-      if (memberId === userId) {
-        showToast('Нельзя исключить себя', 'error');
-        return;
-      }
-      
-      const confirmMsg = 'Вы уверены, что хотите исключить этого участника?';
-      const doIt = async () => {
-        const familyRef = ref(db, `families/${currentFamilyId}`);
-        const snapshot = await get(familyRef);
-        const familyData = snapshot.val();
-        
-        const members = familyData.members || {};
-        delete members[memberId];
-        
-        const banned = familyData.banned || {};
-        banned[memberId] = true;
-        
-        await update(familyRef, { members, banned });
-        
-        // Удаляем привязку у пользователя
-        await update(ref(db, `users/${memberId}`), {
-          familyId: null,
-          role: null
-        });
-        
-        showToast('✅ Участник исключён', 'success');
-        openFamilySettings();
+    }
+    
+    if (!foundFamilyId) {
+      showToast('❌ Неверный код. Проверьте и попробуйте снова.', 'error');
+      return;
+    }
+    
+    // Проверяем, не забанен ли пользователь
+    const familyRef = ref(db, `families/${foundFamilyId}`);
+    const familySnapshot = await get(familyRef);
+    const familyData = familySnapshot.val();
+    
+    if (familyData.banned && familyData.banned[userId]) {
+      showToast('⛔ Вас исключили из этой семьи', 'error');
+      return;
+    }
+    
+    // Добавляем пользователя в семью
+    const members = familyData.members || {};
+    if (members[userId]) {
+      showToast('✅ Вы уже в этой семье', 'success');
+    } else {
+      members[userId] = {
+        role: 'member',
+        joinedAt: Date.now()
       };
-      
-      if (tg?.showConfirm) {
-        tg.showConfirm(confirmMsg, (ok) => { if (ok) doIt(); });
-      } else {
-        if (confirm(confirmMsg)) doIt();
-      }
-    };
-
-    window.closeFamilyModal = function() {
-      document.getElementById('family-modal').classList.remove('active');
-    };
-
-    document.getElementById('family-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'family-modal') closeFamilyModal();
+      await update(familyRef, { members });
+    }
+    
+    // Сохраняем привязку у пользователя
+    await update(ref(db, `users/${userId}`), {
+      familyId: foundFamilyId,
+      role: 'member',
+      name: userName
     });
+    
+    showToast('🎉 Вы присоединились к семье!', 'success');
+    location.reload();
+  } catch (error) {
+    console.error('Ошибка присоединения к семье:', error);
+    showToast('❌ Ошибка. Проверьте консоль.', 'error');
+  }
+};
+
+window.createFamily = async function() {
+  try {
+    const familyName = prompt('Введите название вашей семьи (например: Семья Ивановых):');
+    if (!familyName) return;
+    
+    // Генерируем уникальный код
+    const code = generateInviteCode();
+    const familyId = 'family_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+    
+    // Создаём семью (используем set, потому что у нас уникальный ID)
+    await set(ref(db, `families/${familyId}`), {
+      name: familyName,
+      createdBy: userId,
+      createdAt: Date.now(),
+      inviteCode: code,
+      members: {
+        [userId]: {
+          role: 'admin',
+          joinedAt: Date.now()
+        }
+      }
+    });
+    
+    // Привязываем пользователя
+    await update(ref(db, `users/${userId}`), {
+      familyId: familyId,
+      role: 'admin',
+      name: userName
+    });
+    
+    showToast(`✅ Семья создана! Код: ${code}`, 'success');
+    location.reload();
+  } catch (error) {
+    console.error('Ошибка создания семьи:', error);
+    showToast('❌ Ошибка. Проверьте консоль.', 'error');
+  }
+};
+
+function generateInviteCode() {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const numbers = '0123456789';
+  let code = '';
+  for (let i = 0; i < 4; i++) code += letters[Math.floor(Math.random() * 26)];
+  for (let i = 0; i < 4; i++) code += numbers[Math.floor(Math.random() * 10)];
+  return code;
+}
+
+// ============ ЗАГРУЗКА ДАННЫХ (ИСПРАВЛЕННАЯ) ============
+
+// Загружаем семью пользователя
+let familyLoaded = false;
+try {
+  familyLoaded = await loadUserFamily();
+} catch (error) {
+  console.error('Ошибка при загрузке семьи:', error);
+}
+
+if (!familyLoaded) {
+  // Показываем экран входа в семью
+  document.getElementById('family-entry').style.display = 'flex';
+  // Скрываем онбординг, если он уже показан
+  document.getElementById('onboarding').style.display = 'none';
+} else {
+  // Загружаем задачи только для этой семьи
+  const tasksRef = query(
+    ref(db, 'tasks'),
+    orderByChild('familyId'),
+    equalTo(currentFamilyId)
+  );
+  
+  onValue(tasksRef, (snapshot) => {
+    const data = snapshot.val() || {};
+    tasks = Object.entries(data).map(([id, task]) => ({
+      id,
+      ...task,
+      category: task.category || 'active',
+      voters: task.voters || {},
+      vetoed: !!task.vetoed,
+      votes: task.voters ? Object.keys(task.voters).length : 0
+    }));
+    tasksLoaded = true;
+    render();
+    if (currentDetailId) {
+      const t = tasks.find(x => x.id === currentDetailId);
+      if (t) renderDetail(t);
+    }
+  });
+}
 
     // ============ ЗАГРУЗКА ДАННЫХ ============
 
