@@ -3371,6 +3371,19 @@
     if (tasksLoaded && !localStorage.getItem('onboarding_seen') && currentFamilyId) {
       setTimeout(showOnboarding, 500);
     }
+    // === ФИКС: Enter/Done на поле ввода кода ===
+const inviteInput = document.getElementById('invite-code-input');
+if (inviteInput) {
+  inviteInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === 'Done') {
+      e.preventDefault();
+      document.getElementById('join-family-btn').click();
+    }
+  });
+}
+
+// === ФИКС: если вдруг есть поле для названия семьи (в будущем) ===
+// (сейчас createFamily вызывается через prompt, поэтому не требуется)
   </script>
 
 </body>
