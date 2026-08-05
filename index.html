@@ -1641,23 +1641,36 @@
     const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
     const TMDB_LANG = 'ru-RU';
 
-    // === РАСКРЫТИЕ НА ВЕСЬ ЭКРАН (САМОЕ ВАЖНОЕ) ===
-  const tg = window.Telegram?.WebApp;
-  const user = tg?.initDataUnsafe?.user;
-  const userId = String(user?.id || 'test_' + Date.now());
-  const userName = user?.first_name || (user?.username ? '@' + user.username : 'Гость');
-  const userPhoto = user?.photo_url || null;
+    // === РАСКРЫТИЕ НА ВЕСЬ ЭКРАН ===
+    const tg = window.Telegram?.WebApp;
+    const user = tg?.initDataUnsafe?.user;
+    const userId = String(user?.id || 'test_' + Date.now());
+    const userName = user?.first_name || (user?.username ? '@' + user.username : 'Гость');
+    const userPhoto = user?.photo_url || null;
 
-  if (tg) {
-    tg.ready();
-    tg.expand(); // ← РАСКРЫВАЕТ НА ВЕСЬ ЭКРАН
-    try { tg.requestFullscreen?.(); } catch(e) {}
-    try { tg.disableVerticalSwipes?.(); } catch(e) {}
-    try {
-      tg.setHeaderColor('#0B0D0F');
-      tg.setBackgroundColor('#0B0D0F');
-    } catch(e) {}
-  }
+    if (tg) {
+      tg.ready();
+      tg.expand(); // ← ВАЖНО!
+      try { tg.requestFullscreen?.(); } catch(e) {}
+      try { tg.disableVerticalSwipes?.(); } catch(e) {}
+      try {
+        tg.setHeaderColor('#0B0D0F');
+        tg.setBackgroundColor('#0B0D0F');
+      } catch(e) {}
+    }
+
+    if (tg) {
+      tg.onEvent?.('safeAreaChanged', () => {
+        document.body.style.display = 'none';
+        document.body.offsetHeight;
+        document.body.style.display = '';
+      });
+      tg.onEvent?.('contentSafeAreaChanged', () => {
+        document.body.style.display = 'none';
+        document.body.offsetHeight;
+        document.body.style.display = '';
+      });
+    }
 
     function updateViewportHeight() {
       if (tg?.viewportHeight) {
@@ -1708,53 +1721,7 @@
       }, 300);
     });
 
-    setupAvatar();
-
-    function setupAvatar() {
-      const avatarEl = document.getElementById('avatar');
-      const nameEl = document.getElementById('user-name');
-      nameEl.textContent = userName;
-      if (userPhoto) {
-        avatarEl.style.backgroundImage = `url(${userPhoto})`;
-        avatarEl.textContent = '';
-      } else {
-        const initial = (userName[0] || '?').toUpperCase();
-        avatarEl.style.background = getColorFromId(userId);
-        avatarEl.textContent = initial;
-      }
-    }
-
-    function getColorFromId(id) {
-      const colors = ['#FF6D00', '#FF5A87', '#7C5CFF', '#00A3FF', '#00C853', '#FFB300', '#FF9500', '#5AC8FA', '#AF52DE', '#34C759', '#FF3B30', '#5856D6'];
-      const hash = String(id).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-      return colors[hash % colors.length];
-    }
-
-    function makeAvatarHtml(name, id, photo, size = 24) {
-      const initial = (name?.[0] || '?').toUpperCase();
-      const color = getColorFromId(id || name);
-      const fontSize = Math.max(10, size * 0.42);
-      if (photo) {
-        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background-image:url(${photo});background-size:cover;background-position:center;flex-shrink:0;"></div>`;
-      }
-      return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:${fontSize}px;flex-shrink:0;">${initial}</div>`;
-    }
-
-    let tasks = [];
-    let tasksLoaded = false;
-    let currentFilter = 'active';
-    let editingTaskId = null;
-    let currentDetailId = null;
-    let selectedCategory = 'active';
-    let currentPreview = null;
-    let previewDebounce = null;
-    let titleDebounce = null;
-    let lastSearchedTitle = '';
-
-    // === Семейные переменные ===
-    let currentFamilyId = null;
-    let currentUserRole = 'member';
-    let familyMembers = {};
+    // ============ БАЗОВЫЕ ФУНКЦИИ ============
 
     function haptic(type = 'light') {
       try {
@@ -1800,20 +1767,355 @@
       }, duration + 500);
     }
 
-    function popcornLoaderHtml(text = 'Загружаем...') {
-      return `
-        <div class="popcorn-loader">
-          <div class="popcorn-container">
-            <div class="popcorn-bucket">🍿</div>
-            <span class="popcorn-piece">🌽</span>
-            <span class="popcorn-piece">🌽</span>
-            <span class="popcorn-piece">🌽</span>
-            <span class="popcorn-piece">🌽</span>
-            <span class="popcorn-piece">🌽</span>
+    function getColorFromId(id) {
+      const colors = ['#FF6D00', '#FF5A87', '#7C5CFF', '#00A3FF', '#00C853', '#FFB300', '#FF9500', '#5AC8FA', '#AF52DE', '#34C759', '#FF3B30', '#5856D6'];
+      const hash = String(id).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+      return colors[hash % colors.length];
+    }
+
+    function makeAvatarHtml(name, id, photo, size = 24) {
+      const initial = (name?.[0] || '?').toUpperCase();
+      const color = getColorFromId(id || name);
+      const fontSize = Math.max(10, size * 0.42);
+      if (photo) {
+        return `<div style="width:${size}px;height:${size}px;border-radius:50%;background-image:url(${photo});background-size:cover;background-position:center;flex-shrink:0;"></div>`;
+      }
+      return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:${fontSize}px;flex-shrink:0;">${initial}</div>`;
+    }
+
+    function setupAvatar() {
+      const avatarEl = document.getElementById('avatar');
+      const nameEl = document.getElementById('user-name');
+      nameEl.textContent = userName;
+      if (userPhoto) {
+        avatarEl.style.backgroundImage = `url(${userPhoto})`;
+        avatarEl.textContent = '';
+      } else {
+        const initial = (userName[0] || '?').toUpperCase();
+        avatarEl.style.background = getColorFromId(userId);
+        avatarEl.textContent = initial;
+      }
+    }
+
+    // Вызываем сразу
+    setupAvatar();
+
+    // ============ ПЕРЕМЕННЫЕ ============
+    let tasks = [];
+    let tasksLoaded = false;
+    let currentFilter = 'active';
+    let editingTaskId = null;
+    let currentDetailId = null;
+    let selectedCategory = 'active';
+    let currentPreview = null;
+    let previewDebounce = null;
+    let titleDebounce = null;
+    let lastSearchedTitle = '';
+
+    // ============ СЕМЕЙНАЯ ЛОГИКА ============
+    let currentFamilyId = null;
+    let currentUserRole = 'member';
+    let familyMembers = {};
+
+    async function loadUserFamily() {
+      try {
+        const userRef = ref(db, `users/${userId}`);
+        const snapshot = await get(userRef);
+        const userData = snapshot.val();
+        
+        if (userData && userData.familyId) {
+          currentFamilyId = userData.familyId;
+          currentUserRole = userData.role || 'member';
+          
+          const familyRef = ref(db, `families/${currentFamilyId}`);
+          const familySnapshot = await get(familyRef);
+          const familyData = familySnapshot.val();
+          if (familyData && familyData.members) {
+            familyMembers = familyData.members;
+          }
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('Ошибка загрузки семьи:', error);
+        return false;
+      }
+    }
+
+    window.joinFamilyByCode = async function() {
+      try {
+        const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
+        if (!code) {
+          showToast('Введите код-приглашение', 'error');
+          return;
+        }
+        
+        const familiesRef = ref(db, 'families');
+        const snapshot = await get(familiesRef);
+        const families = snapshot.val() || {};
+        
+        let foundFamilyId = null;
+        for (const [familyId, family] of Object.entries(families)) {
+          if (family.inviteCode === code) {
+            foundFamilyId = familyId;
+            break;
+          }
+        }
+        
+        if (!foundFamilyId) {
+          showToast('❌ Неверный код. Проверьте и попробуйте снова.', 'error');
+          return;
+        }
+        
+        const familyRef = ref(db, `families/${foundFamilyId}`);
+        const familySnapshot = await get(familyRef);
+        const familyData = familySnapshot.val();
+        
+        if (familyData.banned && familyData.banned[userId]) {
+          showToast('⛔ Вас исключили из этой семьи', 'error');
+          return;
+        }
+        
+        const members = familyData.members || {};
+        if (members[userId]) {
+          showToast('✅ Вы уже в этой семье', 'success');
+        } else {
+          members[userId] = {
+            role: 'member',
+            joinedAt: Date.now()
+          };
+          await update(familyRef, { members });
+        }
+        
+        await update(ref(db, `users/${userId}`), {
+          familyId: foundFamilyId,
+          role: 'member',
+          name: userName
+        });
+        
+        showToast('🎉 Вы присоединились к семье!', 'success');
+        location.reload();
+      } catch (error) {
+        console.error('Ошибка присоединения к семье:', error);
+        showToast('❌ Ошибка. Проверьте консоль.', 'error');
+      }
+    };
+
+    window.createFamily = async function() {
+      try {
+        const familyName = prompt('Введите название вашей семьи (например: Семья Ивановых):');
+        if (!familyName) return;
+        
+        const code = generateInviteCode();
+        const familyId = 'family_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+        
+        await set(ref(db, `families/${familyId}`), {
+          name: familyName,
+          createdBy: userId,
+          createdAt: Date.now(),
+          inviteCode: code,
+          members: {
+            [userId]: {
+              role: 'admin',
+              joinedAt: Date.now()
+            }
+          }
+        });
+        
+        await update(ref(db, `users/${userId}`), {
+          familyId: familyId,
+          role: 'admin',
+          name: userName
+        });
+        
+        showToast(`✅ Семья создана! Код: ${code}`, 'success');
+        location.reload();
+      } catch (error) {
+        console.error('Ошибка создания семьи:', error);
+        showToast('❌ Ошибка. Проверьте консоль.', 'error');
+      }
+    };
+
+    function generateInviteCode() {
+      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const numbers = '0123456789';
+      let code = '';
+      for (let i = 0; i < 4; i++) code += letters[Math.floor(Math.random() * 26)];
+      for (let i = 0; i < 4; i++) code += numbers[Math.floor(Math.random() * 10)];
+      return code;
+    }
+
+    window.openFamilySettings = function() {
+      if (currentUserRole !== 'admin') {
+        showToast('Только администратор может управлять семьёй', 'error');
+        return;
+      }
+      
+      const modal = document.getElementById('family-modal');
+      const content = document.getElementById('family-content');
+      
+      let membersHtml = '';
+      for (const [memberId, member] of Object.entries(familyMembers)) {
+        const isAdmin = member.role === 'admin';
+        membersHtml += `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);">
+            <span>${memberId === userId ? '👤 Вы' : `👤 Пользователь ${memberId}`}</span>
+            <div>
+              ${isAdmin ? '<span style="color:var(--brand); font-weight:600;">Админ</span>' : ''}
+              ${memberId !== userId ? `<button onclick="banMember('${memberId}')" style="background:var(--accent-red); color:white; border:none; border-radius:6px; padding:4px 12px; font-size:12px; cursor:pointer;">Исключить</button>` : ''}
+            </div>
           </div>
-          <div class="popcorn-text">${text}</div>
+        `;
+      }
+      
+      content.innerHTML = `
+        <h2>🏠 Управление семьёй</h2>
+        
+        <div style="margin-bottom:16px; padding:12px; background:var(--card-alt); border-radius:12px; border:1px solid var(--border);">
+          <div style="font-size:13px; color:var(--hint); margin-bottom:4px;">Код приглашения</div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span style="font-size:20px; font-weight:700; letter-spacing:2px; color:var(--brand);">${familyMembers.inviteCode || '---'}</span>
+            <button onclick="copyInviteCode()" style="background:var(--card-alt); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:6px 12px; font-size:12px; cursor:pointer;">📋 Копировать</button>
+            <button onclick="regenerateInviteCode()" style="background:var(--card-alt); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:6px 12px; font-size:12px; cursor:pointer;">🔄 Сменить</button>
+          </div>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <div style="font-size:13px; color:var(--hint); margin-bottom:8px;">Участники (${Object.keys(familyMembers).length})</div>
+          ${membersHtml}
+        </div>
+        
+        <div class="modal-buttons" style="margin-top:10px;">
+          <button class="btn-cancel" onclick="closeFamilyModal()">Закрыть</button>
         </div>
       `;
+      
+      modal.classList.add('active');
+    };
+
+    window.copyInviteCode = function() {
+      const code = familyMembers.inviteCode || '---';
+      try {
+        navigator.clipboard.writeText(code);
+        showToast('📋 Код скопирован!', 'success');
+      } catch(e) {
+        showToast('Не удалось скопировать', 'error');
+      }
+    };
+
+    window.regenerateInviteCode = async function() {
+      if (currentUserRole !== 'admin') {
+        showToast('Только администратор может сменить код', 'error');
+        return;
+      }
+      
+      const newCode = generateInviteCode();
+      await update(ref(db, `families/${currentFamilyId}`), {
+        inviteCode: newCode
+      });
+      showToast(`✅ Новый код: ${newCode}`, 'success');
+      openFamilySettings();
+    };
+
+    window.banMember = async function(memberId) {
+      if (currentUserRole !== 'admin') {
+        showToast('Только администратор может исключать', 'error');
+        return;
+      }
+      
+      if (memberId === userId) {
+        showToast('Нельзя исключить себя', 'error');
+        return;
+      }
+      
+      const confirmMsg = 'Вы уверены, что хотите исключить этого участника?';
+      const doIt = async () => {
+        const familyRef = ref(db, `families/${currentFamilyId}`);
+        const snapshot = await get(familyRef);
+        const familyData = snapshot.val();
+        
+        const members = familyData.members || {};
+        delete members[memberId];
+        
+        const banned = familyData.banned || {};
+        banned[memberId] = true;
+        
+        await update(familyRef, { members, banned });
+        
+        await update(ref(db, `users/${memberId}`), {
+          familyId: null,
+          role: null
+        });
+        
+        showToast('✅ Участник исключён', 'success');
+        openFamilySettings();
+      };
+      
+      if (tg?.showConfirm) {
+        tg.showConfirm(confirmMsg, (ok) => { if (ok) doIt(); });
+      } else {
+        if (confirm(confirmMsg)) doIt();
+      }
+    };
+
+    window.closeFamilyModal = function() {
+      document.getElementById('family-modal').classList.remove('active');
+    };
+
+    document.getElementById('family-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'family-modal') closeFamilyModal();
+    });
+
+    // ============ ЗАГРУЗКА ДАННЫХ ============
+    let familyLoaded = false;
+    try {
+      familyLoaded = await loadUserFamily();
+    } catch (error) {
+      console.error('Ошибка при загрузке семьи:', error);
+    }
+
+    if (!familyLoaded) {
+      document.getElementById('family-entry').style.display = 'flex';
+      document.getElementById('onboarding').style.display = 'none';
+    } else {
+      const tasksRef = query(
+        ref(db, 'tasks'),
+        orderByChild('familyId'),
+        equalTo(currentFamilyId)
+      );
+      
+      onValue(tasksRef, (snapshot) => {
+        const data = snapshot.val() || {};
+        tasks = Object.entries(data).map(([id, task]) => ({
+          id,
+          ...task,
+          category: task.category || 'active',
+          voters: task.voters || {},
+          vetoed: !!task.vetoed,
+          votes: task.voters ? Object.keys(task.voters).length : 0
+        }));
+        tasksLoaded = true;
+        render();
+        if (currentDetailId) {
+          const t = tasks.find(x => x.id === currentDetailId);
+          if (t) renderDetail(t);
+        }
+      });
+    }
+
+    // ============ ОСТАЛЬНЫЕ ФУНКЦИИ ============
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+
+    function isValidUrl(str) {
+      try {
+        const url = new URL(str);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+      } catch { return false; }
     }
 
     function parseTmdbUrl(url) {
@@ -2073,198 +2375,6 @@
       }, 800);
     }
 
-    // ============ СЕМЕЙНАЯ ЛОГИКА (ИСПРАВЛЕННАЯ) ============
-
-async function loadUserFamily() {
-  try {
-    const userRef = ref(db, `users/${userId}`);
-    const snapshot = await get(userRef);
-    const userData = snapshot.val();
-    
-    if (userData && userData.familyId) {
-      currentFamilyId = userData.familyId;
-      currentUserRole = userData.role || 'member';
-      
-      // Загружаем участников семьи
-      const familyRef = ref(db, `families/${currentFamilyId}`);
-      const familySnapshot = await get(familyRef);
-      const familyData = familySnapshot.val();
-      if (familyData && familyData.members) {
-        familyMembers = familyData.members;
-      }
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.error('Ошибка загрузки семьи:', error);
-    return false;
-  }
-}
-
-window.joinFamilyByCode = async function() {
-  try {
-    const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
-    if (!code) {
-      showToast('Введите код-приглашение', 'error');
-      return;
-    }
-    
-    // Ищем семью по коду
-    const familiesRef = ref(db, 'families');
-    const snapshot = await get(familiesRef);
-    const families = snapshot.val() || {};
-    
-    let foundFamilyId = null;
-    for (const [familyId, family] of Object.entries(families)) {
-      if (family.inviteCode === code) {
-        foundFamilyId = familyId;
-        break;
-      }
-    }
-    
-    if (!foundFamilyId) {
-      showToast('❌ Неверный код. Проверьте и попробуйте снова.', 'error');
-      return;
-    }
-    
-    // Проверяем, не забанен ли пользователь
-    const familyRef = ref(db, `families/${foundFamilyId}`);
-    const familySnapshot = await get(familyRef);
-    const familyData = familySnapshot.val();
-    
-    if (familyData.banned && familyData.banned[userId]) {
-      showToast('⛔ Вас исключили из этой семьи', 'error');
-      return;
-    }
-    
-    // Добавляем пользователя в семью
-    const members = familyData.members || {};
-    if (members[userId]) {
-      showToast('✅ Вы уже в этой семье', 'success');
-    } else {
-      members[userId] = {
-        role: 'member',
-        joinedAt: Date.now()
-      };
-      await update(familyRef, { members });
-    }
-    
-    // Сохраняем привязку у пользователя
-    await update(ref(db, `users/${userId}`), {
-      familyId: foundFamilyId,
-      role: 'member',
-      name: userName
-    });
-    
-    showToast('🎉 Вы присоединились к семье!', 'success');
-    location.reload();
-  } catch (error) {
-    console.error('Ошибка присоединения к семье:', error);
-    showToast('❌ Ошибка. Проверьте консоль.', 'error');
-  }
-};
-
-window.createFamily = async function() {
-  try {
-    const familyName = prompt('Введите название вашей семьи (например: Семья Ивановых):');
-    if (!familyName) return;
-    
-    // Генерируем уникальный код
-    const code = generateInviteCode();
-    const familyId = 'family_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
-    
-    // Создаём семью (используем set, потому что у нас уникальный ID)
-    await set(ref(db, `families/${familyId}`), {
-      name: familyName,
-      createdBy: userId,
-      createdAt: Date.now(),
-      inviteCode: code,
-      members: {
-        [userId]: {
-          role: 'admin',
-          joinedAt: Date.now()
-        }
-      }
-    });
-    
-    // Привязываем пользователя
-    await update(ref(db, `users/${userId}`), {
-      familyId: familyId,
-      role: 'admin',
-      name: userName
-    });
-    
-    showToast(`✅ Семья создана! Код: ${code}`, 'success');
-    location.reload();
-  } catch (error) {
-    console.error('Ошибка создания семьи:', error);
-    showToast('❌ Ошибка. Проверьте консоль.', 'error');
-  }
-};
-
-function generateInviteCode() {
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const numbers = '0123456789';
-  let code = '';
-  for (let i = 0; i < 4; i++) code += letters[Math.floor(Math.random() * 26)];
-  for (let i = 0; i < 4; i++) code += numbers[Math.floor(Math.random() * 10)];
-  return code;
-}
-
-
-    // ============ ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ============
-async function initApp() {
-  try {
-    // Загружаем семью пользователя
-    let familyLoaded = false;
-    try {
-      familyLoaded = await loadUserFamily();
-    } catch (error) {
-      console.error('Ошибка при загрузке семьи:', error);
-    }
-
-    if (!familyLoaded) {
-      // Показываем экран входа в семью
-      document.getElementById('family-entry').style.display = 'flex';
-      // Скрываем онбординг, если он уже показан
-      document.getElementById('onboarding').style.display = 'none';
-      return; // ❗️ ВАЖНО: выходим, чтобы не загружать задачи
-    }
-
-    // Загружаем задачи только для этой семьи
-    const tasksRef = query(
-      ref(db, 'tasks'),
-      orderByChild('familyId'),
-      equalTo(currentFamilyId)
-    );
-    
-    onValue(tasksRef, (snapshot) => {
-      const data = snapshot.val() || {};
-      tasks = Object.entries(data).map(([id, task]) => ({
-        id,
-        ...task,
-        category: task.category || 'active',
-        voters: task.voters || {},
-        vetoed: !!task.vetoed,
-        votes: task.voters ? Object.keys(task.voters).length : 0
-      }));
-      tasksLoaded = true;
-      render();
-      if (currentDetailId) {
-        const t = tasks.find(x => x.id === currentDetailId);
-        if (t) renderDetail(t);
-      }
-    });
-  } catch (error) {
-    console.error('❌ Критическая ошибка при инициализации:', error);
-    showToast('❌ Ошибка загрузки. Проверьте консоль.', 'error');
-  }
-}
-
-// Запускаем приложение
-initApp();
-    // ============ ОСТАЛЬНЫЕ ФУНКЦИИ ============
-
     window.setFilter = function(f) {
       currentFilter = f;
       document.querySelectorAll('.filter').forEach(b => {
@@ -2365,6 +2475,43 @@ initApp();
       if (mod10 === 1) return 'день';
       if (mod10 >= 2 && mod10 <= 4) return 'дня';
       return 'дней';
+    }
+
+    function formatCreatedDate(timestamp) {
+      if (!timestamp) return 'Добавлен недавно';
+      
+      if (typeof timestamp === 'object' && timestamp !== null) {
+        if (timestamp.seconds) timestamp = timestamp.seconds * 1000;
+        else return 'Добавлен недавно';
+      }
+      
+      if (typeof timestamp === 'number' && timestamp < 10000000000) {
+        timestamp = timestamp * 1000;
+      }
+      
+      const ts = Number(timestamp);
+      if (!ts || isNaN(ts)) return 'Добавлен недавно';
+      
+      const now = new Date();
+      const created = new Date(ts);
+      
+      const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const createdDate = new Date(created.getFullYear(), created.getMonth(), created.getDate());
+      const diffDays = Math.floor((nowDate - createdDate) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) return 'Добавлен сегодня';
+      if (diffDays === 1) return 'Добавлен вчера';
+      
+      const lastDigit = diffDays % 10;
+      const lastTwoDigits = diffDays % 100;
+      
+      let word;
+      if (lastTwoDigits >= 11 && lastTwoDigits <= 14) word = 'дней';
+      else if (lastDigit === 1) word = 'день';
+      else if (lastDigit >= 2 && lastDigit <= 4) word = 'дня';
+      else word = 'дней';
+      
+      return `Добавлен ${diffDays} ${word} назад`;
     }
 
     function renderTodayBlock() {
@@ -2537,55 +2684,21 @@ initApp();
       });
     }
 
-    function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str || '';
-      return div.innerHTML;
-    }
-
-    function formatCreatedDate(timestamp) {
-      if (!timestamp) return 'Добавлен недавно';
-      
-      if (typeof timestamp === 'object' && timestamp !== null) {
-        if (timestamp.seconds) timestamp = timestamp.seconds * 1000;
-        else return 'Добавлен недавно';
-      }
-      
-      if (typeof timestamp === 'number' && timestamp < 10000000000) {
-        timestamp = timestamp * 1000;
-      }
-      
-      const ts = Number(timestamp);
-      if (!ts || isNaN(ts)) return 'Добавлен недавно';
-      
-      const now = new Date();
-      const created = new Date(ts);
-      
-      const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const createdDate = new Date(created.getFullYear(), created.getMonth(), created.getDate());
-      const diffDays = Math.floor((nowDate - createdDate) / (1000 * 60 * 60 * 24));
-      
-      if (diffDays === 0) return 'Добавлен сегодня';
-      if (diffDays === 1) return 'Добавлен вчера';
-      
-      const lastDigit = diffDays % 10;
-      const lastTwoDigits = diffDays % 100;
-      
-      let word;
-      if (lastTwoDigits >= 11 && lastTwoDigits <= 14) word = 'дней';
-      else if (lastDigit === 1) word = 'день';
-      else if (lastDigit >= 2 && lastDigit <= 4) word = 'дня';
-      else word = 'дней';
-      
-      return `Добавлен ${diffDays} ${word} назад`;
-    }
-
-    function isValidUrl(str) {
-      try {
-        const url = new URL(str);
-        return url.protocol === 'http:' || url.protocol === 'https:';
-      } catch { return false; }
-    }
+    window.popcornLoaderHtml = function(text = 'Загружаем...') {
+      return `
+        <div class="popcorn-loader">
+          <div class="popcorn-container">
+            <div class="popcorn-bucket">🍿</div>
+            <span class="popcorn-piece">🌽</span>
+            <span class="popcorn-piece">🌽</span>
+            <span class="popcorn-piece">🌽</span>
+            <span class="popcorn-piece">🌽</span>
+            <span class="popcorn-piece">🌽</span>
+          </div>
+          <div class="popcorn-text">${text}</div>
+        </div>
+      `;
+    };
 
     async function vote(id) {
       const task = tasks.find(t => t.id === id);
@@ -3119,13 +3232,11 @@ initApp();
       const onboarding = document.getElementById('onboarding');
       if (!onboarding) return;
       
-      // Проверяем, видел ли уже
       if (localStorage.getItem('onboarding_seen') === 'true') {
         onboarding.style.display = 'none';
         return;
       }
       
-      // Обновляем статистику в последнем слайде
       const statEl = document.getElementById('onboarding-month-stats');
       if (statEl) {
         const doneThisMonth = tasks.filter(t => {
@@ -3141,13 +3252,11 @@ initApp();
       goToStory(0);
       startStoryTimer();
       
-      // Свайпы
       const swipeArea = document.getElementById('swipe-area');
       swipeArea.addEventListener('touchstart', onStoryTouchStart, { passive: true });
       swipeArea.addEventListener('touchmove', onStoryTouchMove, { passive: true });
       swipeArea.addEventListener('touchend', onStoryTouchEnd, { passive: true });
       
-      // Клики по краям (для десктопа)
       swipeArea.addEventListener('click', (e) => {
         const rect = swipeArea.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -3170,7 +3279,6 @@ initApp();
         else if (i === currentStory) seg.classList.add('active');
       });
       
-      // Кнопка "Начать" только на последнем слайде
       if (currentStory === 2) {
         startBtn.style.display = 'block';
       } else {
@@ -3260,15 +3368,9 @@ initApp();
     }
 
     // Запускаем онбординг после загрузки данных
-    const originalRender = window.render;
-    window.render = function() {
-      if (typeof originalRender === 'function') {
-        originalRender();
-      }
-      if (tasksLoaded && !localStorage.getItem('onboarding_seen') && currentFamilyId) {
-        setTimeout(showOnboarding, 500);
-      }
-    };
+    if (tasksLoaded && !localStorage.getItem('onboarding_seen') && currentFamilyId) {
+      setTimeout(showOnboarding, 500);
+    }
   </script>
 
 </body>
