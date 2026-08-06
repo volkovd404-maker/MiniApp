@@ -1539,20 +1539,11 @@
     <div class="modal-content" id="family-content"></div>
   </div>
 
-  <script type="importmap">
-    {
-      "imports": {
-        "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
-        "firebase/database": "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
-      }
-    }
-  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
 
-  <script type="module">
-    import { initializeApp } from 'firebase/app';
-    import { getDatabase, ref, onValue, push, update, remove, get, query, orderByChild, equalTo, set } from 'firebase/database';
-
-    // ⚠️ ВСТАВЬТЕ СЮДА ВАШ КОНФИГ FIREBASE ⚠️
+  <script>
+    // ===== FIREBASE ИНИЦИАЛИЗАЦИЯ =====
     const firebaseConfig = {
       apiKey: "AIzaSyAyQfQD8aRxLKhEtIcq4QzKjCLmJgQXlVc",
       authDomain: "miniappvolkov.firebaseapp.com",
@@ -1563,8 +1554,8 @@
       appId: "1:798881767507:web:4d9061ef9beb42d607a6a6"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
     const TMDB_API_KEY = 'd5806ec3adbcd850c1fe8109b15e9f2f';
     const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
@@ -1585,6 +1576,7 @@
       try { tg.setBackgroundColor('#0B0D0F'); } catch(e) {}
     }
 
+    // ===== БАЗОВЫЕ ФУНКЦИИ =====
     function haptic(type = 'light') {
       try {
         if (type === 'success') tg?.HapticFeedback?.notificationOccurred('success');
@@ -1606,7 +1598,6 @@
       }, duration);
     }
 
-    // ============ БАЗОВЫЕ ФУНКЦИИ ============
     function getColorFromId(id) {
       const colors = ['#FF6D00', '#FF5A87', '#7C5CFF', '#00A3FF', '#00C853', '#FFB300', '#FF9500', '#5AC8FA', '#AF52DE', '#34C759', '#FF3B30', '#5856D6'];
       const hash = String(id).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -1638,7 +1629,7 @@
     }
     setupAvatar();
 
-    // ============ ПЕРЕМЕННЫЕ ============
+    // ===== ПЕРЕМЕННЫЕ =====
     let tasks = [];
     let tasksLoaded = false;
     let currentFilter = 'active';
@@ -1650,20 +1641,20 @@
     let titleDebounce = null;
     let lastSearchedTitle = '';
 
-    // ============ СЕМЕЙНАЯ ЛОГИКА ============
+    // ===== СЕМЕЙНАЯ ЛОГИКА =====
     let currentFamilyId = null;
     let currentUserRole = 'member';
     let familyMembers = {};
 
     async function loadUserFamily() {
       try {
-        const userRef = ref(db, `users/${userId}`);
+        const userRef = firebase.database().ref(db, `users/${userId}`);
         const snapshot = await get(userRef);
         const userData = snapshot.val();
         if (userData && userData.familyId) {
           currentFamilyId = userData.familyId;
           currentUserRole = userData.role || 'member';
-          const familyRef = ref(db, `families/${currentFamilyId}`);
+          const familyRef = firebase.database().ref(db, `families/${currentFamilyId}`);
           const familySnapshot = await get(familyRef);
           const familyData = familySnapshot.val();
           if (familyData && familyData.members) {
@@ -1687,11 +1678,10 @@
       return code;
     }
 
-    // ============ ПРИВЯЗКА КНОПОК (ЧЕРЕЗ addEventListener) ============
+    // ===== ПРИВЯЗКА КНОПОК =====
     document.addEventListener('DOMContentLoaded', () => {
       console.log('🟢 DOMContentLoaded — привязываем кнопки');
 
-      // Кнопка присоединиться
       const joinBtn = document.getElementById('join-family-btn');
       if (joinBtn) {
         joinBtn.addEventListener('click', async () => {
@@ -1701,7 +1691,7 @@
             showToast('Введите код-приглашение', 'error');
             return;
           }
-          const familiesRef = ref(db, 'families');
+          const familiesRef = firebase.database().ref(db, 'families');
           const snapshot = await get(familiesRef);
           const families = snapshot.val() || {};
           let foundFamilyId = null;
@@ -1715,7 +1705,7 @@
             showToast('❌ Неверный код', 'error');
             return;
           }
-          const familyRef = ref(db, `families/${foundFamilyId}`);
+          const familyRef = firebase.database().ref(db, `families/${foundFamilyId}`);
           const familySnapshot = await get(familyRef);
           const familyData = familySnapshot.val();
           if (familyData.banned && familyData.banned[userId]) {
@@ -1729,7 +1719,7 @@
             members[userId] = { role: 'member', joinedAt: Date.now() };
             await update(familyRef, { members });
           }
-          await update(ref(db, `users/${userId}`), {
+          await update(firebase.database().ref(db, `users/${userId}`), {
             familyId: foundFamilyId,
             role: 'member',
             name: userName
@@ -1739,7 +1729,6 @@
         });
       }
 
-      // Кнопка создать семью
       const createBtn = document.getElementById('create-family-btn');
       if (createBtn) {
         createBtn.addEventListener('click', async () => {
@@ -1748,14 +1737,14 @@
           if (!familyName) return;
           const code = generateInviteCode();
           const familyId = 'family_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
-          await set(ref(db, `families/${familyId}`), {
+          await set(firebase.database().ref(db, `families/${familyId}`), {
             name: familyName,
             createdBy: userId,
             createdAt: Date.now(),
             inviteCode: code,
             members: { [userId]: { role: 'admin', joinedAt: Date.now() } }
           });
-          await update(ref(db, `users/${userId}`), {
+          await update(firebase.database().ref(db, `users/${userId}`), {
             familyId: familyId,
             role: 'admin',
             name: userName
@@ -1765,51 +1754,46 @@
         });
       }
 
-      // Кнопка добавить фильм
       const addBtn = document.getElementById('add-btn');
       if (addBtn) {
         addBtn.addEventListener('click', () => {
           console.log('🟢 Клик: Добавить фильм');
-          window.openAddModal();
+          openAddModal();
         });
       }
 
-      // Кнопка сохранить (в модалке)
       const saveBtn = document.getElementById('edit-save-btn');
       if (saveBtn) {
         saveBtn.addEventListener('click', () => {
           console.log('🟢 Клик: Сохранить');
-          window.saveTask();
+          saveTask();
         });
       }
 
-      // Кнопка отмена (в модалке)
       const cancelBtn = document.getElementById('edit-cancel-btn');
       if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
           console.log('🟢 Клик: Отмена');
-          window.closeEditModal();
+          closeEditModal();
         });
       }
 
-      // Фильтры
       document.querySelectorAll('.filter').forEach(btn => {
         btn.addEventListener('click', () => {
           console.log('🟢 Клик: Фильтр', btn.dataset.filter);
-          window.setFilter(btn.dataset.filter);
+          setFilter(btn.dataset.filter);
         });
       });
 
-      // Категории в модалке
       document.querySelectorAll('.category-option').forEach(btn => {
         btn.addEventListener('click', () => {
           console.log('🟢 Клик: Категория', btn.dataset.value);
-          window.selectCategory(btn.dataset.value);
+          selectCategory(btn.dataset.value);
         });
       });
     });
 
-    // ============ ОСНОВНЫЕ ФУНКЦИИ ============
+    // ===== ОСНОВНЫЕ ФУНКЦИИ =====
     function escapeHtml(str) {
       const div = document.createElement('div');
       div.textContent = str || '';
@@ -2044,7 +2028,7 @@
       }, 800);
     }
 
-    // ============ ОСНОВНАЯ ЛОГИКА ============
+    // ===== ОСНОВНАЯ ЛОГИКА =====
     let familyLoaded = false;
     try {
       familyLoaded = await loadUserFamily();
@@ -2056,8 +2040,12 @@
       document.getElementById('family-entry').style.display = 'flex';
       document.getElementById('onboarding').style.display = 'none';
     } else {
-      const tasksRef = query(ref(db, 'tasks'), orderByChild('familyId'), equalTo(currentFamilyId));
-      onValue(tasksRef, (snapshot) => {
+      const tasksRef = firebase.database().query(
+        firebase.database().ref(db, 'tasks'),
+        firebase.database().orderByChild('familyId'),
+        firebase.database().equalTo(currentFamilyId)
+      );
+      firebase.database().onValue(tasksRef, (snapshot) => {
         const data = snapshot.val() || {};
         tasks = Object.entries(data).map(([id, task]) => ({
           id,
@@ -2076,7 +2064,7 @@
       });
     }
 
-    // ============ ФУНКЦИИ UI ============
+    // ===== ФУНКЦИИ UI =====
     function getFiltered() {
       let list = [...tasks];
       if (currentFilter === 'active') list = list.filter(t => !t.done && !t.vetoed && t.category === 'active');
@@ -2293,17 +2281,17 @@
       });
     }
 
-    // ============ ОСТАЛЬНЫЕ ФУНКЦИИ ============
-    window.setFilter = function(f) {
+    // ===== ОСТАЛЬНЫЕ ФУНКЦИИ =====
+    function setFilter(f) {
       currentFilter = f;
       document.querySelectorAll('.filter').forEach(b => {
         b.classList.toggle('active', b.dataset.filter === f);
       });
       haptic('light');
       render();
-    };
+    }
 
-    window.selectCategory = function(cat) {
+    function selectCategory(cat) {
       selectedCategory = cat;
       document.querySelectorAll('.category-option').forEach(b => {
         b.classList.toggle('active', b.dataset.value === cat);
@@ -2312,7 +2300,7 @@
       if (cat === 'active') desc.textContent = 'Фильм для семейного просмотра — все могут голосовать';
       else desc.textContent = 'Сериал для просмотра';
       haptic('light');
-    };
+    }
 
     async function vote(id) {
       const task = tasks.find(t => t.id === id);
@@ -2321,14 +2309,14 @@
       if (voters[userId]) delete voters[userId];
       else voters[userId] = true;
       haptic('light');
-      await update(ref(db, `tasks/${id}`), { voters });
+      await update(firebase.database().ref(db, `tasks/${id}`), { voters });
     }
 
     async function toggleDone(id) {
       const task = tasks.find(t => t.id === id);
       if (!task) return;
       haptic('success');
-      await update(ref(db, `tasks/${id}`), { done: !task.done, doneBy: !task.done ? userName : null, doneById: !task.done ? userId : null, doneAt: !task.done ? Date.now() : null });
+      await update(firebase.database().ref(db, `tasks/${id}`), { done: !task.done, doneBy: !task.done ? userName : null, doneById: !task.done ? userId : null, doneAt: !task.done ? Date.now() : null });
     }
 
     async function toggleVeto(id) {
@@ -2338,16 +2326,18 @@
       const confirmMsg = newState ? `Наложить вето на фильм «${task.title}»?` : `Снять вето с фильма «${task.title}»?`;
       const doIt = async () => {
         haptic('success');
-        await update(ref(db, `tasks/${id}`), { vetoed: newState, vetoedBy: newState ? userName : null, vetoedById: newState ? userId : null, vetoedAt: newState ? Date.now() : null });
+        await update(firebase.database().ref(db, `tasks/${id}`), { vetoed: newState, vetoedBy: newState ? userName : null, vetoedById: newState ? userId : null, vetoedAt: newState ? Date.now() : null });
         showToast(newState ? '✋ Вето наложено' : '✅ Вето снято', 'success');
       };
       if (tg?.showConfirm) tg.showConfirm(confirmMsg, (ok) => { if (ok) doIt(); });
       else if (confirm(confirmMsg)) doIt();
     }
 
-    window.toggleVeto = toggleVeto;
+    function toggleVetoWrapper(id) {
+      toggleVeto(id);
+    }
 
-    window.notifyGroup = async function(taskId) {
+    function notifyGroup(taskId) {
       const task = tasks.find(t => t.id === taskId);
       if (!task) return;
       const daysOld = task.createdAt ? Math.floor((Date.now() - task.createdAt) / (1000 * 60 * 60 * 24)) : 0;
@@ -2355,15 +2345,15 @@
       haptic('success');
       if (tg?.switchInlineQuery) { try { tg.switchInlineQuery(text, ['groups', 'supergroups']); return; } catch(e) {} }
       try {
-        await navigator.clipboard.writeText(text);
+        navigator.clipboard.writeText(text);
         showToast('📋 Напоминание скопировано! Вставьте в чат группы', 'success');
       } catch(e) {
         if (tg?.showAlert) tg.showAlert('Скопируйте текст:\n\n' + text);
         else alert('Скопируйте текст:\n\n' + text);
       }
-    };
+    }
 
-    window.notifyGroupViaBot = function(taskId) {
+    function notifyGroupViaBot(taskId) {
       const task = tasks.find(t => t.id === taskId);
       if (!task) return;
       const text = `🎬 Фильм этих выходных\n\n${task.title}\n` + (task.why ? `💡 ${task.why}\n` : '') + `👍 Голосов: ${task.votes}\n` + `📅 В работе: ${task.createdAt ? Math.floor((Date.now() - task.createdAt) / (1000 * 60 * 60 * 24)) : 0} дн.\n` + `Автор: ${task.author}` + (task.link ? `\n\n🔗 ${task.link}` : '');
@@ -2372,16 +2362,16 @@
       haptic('success');
       if (tg?.openLink) tg.openLink(url);
       else window.open(url, '_blank');
-    };
+    }
 
-    window.openDetail = function(id) {
+    function openDetail(id) {
       const task = tasks.find(t => t.id === id);
       if (!task) return;
       currentDetailId = id;
       renderDetail(task);
       document.getElementById('detail-modal').classList.add('active');
       haptic('light');
-    };
+    }
 
     function renderDetail(task) {
       const isVoted = task.voters && task.voters[userId];
@@ -2455,7 +2445,7 @@
         ${linkBlock}
         ${!task.vetoed ? `<button class="btn-done-big ${task.done ? 'reopen' : ''}" onclick="toggleDoneFromDetail('${task.id}')">${task.done ? '↩ Вернуть в работу' : '✓ Глянули'}</button>` : ''}
         <div class="modal-buttons" style="margin-top:10px;">
-          <button class="${task.vetoed ? 'btn-unveto' : 'btn-veto'}" onclick="toggleVeto('${task.id}')">${task.vetoed ? '↩ Снять вето' : '✋ Наложить вето'}</button>
+          <button class="${task.vetoed ? 'btn-unveto' : 'btn-veto'}" onclick="toggleVetoWrapper('${task.id}')">${task.vetoed ? '↩ Снять вето' : '✋ Наложить вето'}</button>
           ${isMine ? `<button class="btn-cancel" onclick="editTask('${task.id}')">✏</button><button class="btn-delete" onclick="deleteTask('${task.id}')">🗑</button>` : ''}
         </div>
       `;
@@ -2511,29 +2501,38 @@
       }, 280);
     }
 
-    window.closeDetail = closeDetailAnimated;
-    window.voteDetail = vote;
-    window.toggleDoneFromDetail = toggleDone;
-    window.openLink = function(url) {
+    function closeDetail() {
+      closeDetailAnimated();
+    }
+
+    function voteDetail(id) {
+      vote(id);
+    }
+
+    function toggleDoneFromDetail(id) {
+      toggleDone(id);
+    }
+
+    function openLink(url) {
       if (tg?.openLink) tg.openLink(url);
       else window.open(url, '_blank');
-    };
+    }
 
-    window.deleteTask = async function(id) {
+    function deleteTask(id) {
       const task = tasks.find(t => t.id === id);
       if (!task) return;
       const msg = 'Удалить фильм «' + task.title + '»?';
       const doIt = async () => {
-        await remove(ref(db, `tasks/${id}`));
+        await remove(firebase.database().ref(db, `tasks/${id}`));
         closeDetailAnimated();
         haptic('success');
         showToast('🗑 Фильм удален');
       };
       if (tg?.showConfirm) tg.showConfirm(msg, (ok) => { if (ok) doIt(); });
       else if (confirm(msg)) doIt();
-    };
+    }
 
-    window.editTask = function(id) {
+    function editTask(id) {
       const task = tasks.find(t => t.id === id);
       if (!task) return;
       editingTaskId = id;
@@ -2551,9 +2550,9 @@
         document.getElementById('edit-modal').classList.add('active');
         document.getElementById('task-input').focus();
       }, 250);
-    };
+    }
 
-    window.openAddModal = function() {
+    function openAddModal() {
       editingTaskId = null;
       selectedCategory = currentFilter === 'mine' ? 'mine' : 'active';
       currentPreview = null;
@@ -2567,9 +2566,9 @@
       document.getElementById('edit-modal').classList.add('active');
       document.body.style.overflow = 'hidden';
       setTimeout(() => document.getElementById('task-input').focus(), 100);
-    };
+    }
 
-    window.closeEditModal = function() {
+    function closeEditModal() {
       document.getElementById('edit-modal').classList.remove('active');
       document.body.style.overflow = '';
       editingTaskId = null;
@@ -2577,9 +2576,9 @@
       lastSearchedTitle = '';
       clearTimeout(previewDebounce);
       clearTimeout(titleDebounce);
-    };
+    }
 
-    window.saveTask = async function() {
+    async function saveTask() {
       const title = document.getElementById('task-input').value.trim();
       const why = document.getElementById('task-why').value.trim();
       let link = document.getElementById('task-link').value.trim();
@@ -2610,7 +2609,7 @@
         tmdbTagline: currentPreview.tmdbTagline || null
       } : null;
       if (editingTaskId) {
-        await update(ref(db, `tasks/${editingTaskId}`), {
+        await update(firebase.database().ref(db, `tasks/${editingTaskId}`), {
           title, why, link,
           category: selectedCategory,
           preview: previewData,
@@ -2618,7 +2617,7 @@
         });
         showToast('✅ Изменения сохранены', 'success');
       } else {
-        await push(ref(db, 'tasks'), {
+        await push(firebase.database().ref(db, 'tasks'), {
           title, why, link,
           category: selectedCategory,
           preview: previewData,
@@ -2635,7 +2634,7 @@
         showToast('🎉 Фильм добавлен', 'success');
       }
       closeEditModal();
-    };
+    }
 
     document.getElementById('edit-modal').addEventListener('click', (e) => {
       if (e.target.id === 'edit-modal') closeEditModal();
@@ -2714,7 +2713,7 @@
       observer.observe(document.getElementById('family-modal'), { attributes: true });
     }
 
-    // === ОНБОРДИНГ ===
+    // ===== ОНБОРДИНГ =====
     let currentStory = 0;
     let storyTimer = null;
     let storySwipeStartX = 0;
