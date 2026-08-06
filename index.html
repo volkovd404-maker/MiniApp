@@ -3385,37 +3385,34 @@
       setTimeout(showOnboarding, 500);
     }
 
-    // === ПРИНУДИТЕЛЬНАЯ ПРИВЯЗКА КНОПОК (гарантирует работу) ===
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('🟢 DOMContentLoaded — привязываем кнопки');
-      
-      const joinBtn = document.getElementById('join-family-btn');
-      if (joinBtn) {
-        joinBtn.onclick = function(e) {
-          e.preventDefault();
-          console.log('🟢 Клик по кнопке "Присоединиться"');
-          window.joinFamilyByCode();
-        };
-      }
-      
-      const createBtn = document.querySelector('[onclick="createFamily()"]');
-      if (createBtn) {
-        createBtn.onclick = function(e) {
-          e.preventDefault();
-          console.log('🟢 Клик по кнопке "Создать семью"');
-          window.createFamily();
-        };
-      }
-      
-      const addBtn = document.querySelector('.add-btn');
-      if (addBtn) {
-        addBtn.onclick = function(e) {
-          e.preventDefault();
-          console.log('🟢 Клик по кнопке "Добавить"');
-          window.openAddModal();
-        };
-      }
-    });
+    // === ПРИНУДИТЕЛЬНАЯ ПРИВЯЗКА КНОПОК (ИСПРАВЛЕННАЯ) ===
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🟢 DOMContentLoaded — привязываем кнопки');
+  
+  const joinBtn = document.getElementById('join-family-btn');
+  if (joinBtn) {
+    joinBtn.onclick = function() {
+      console.log('🟢 Клик по кнопке "Присоединиться"');
+      window.joinFamilyByCode();
+    };
+  }
+  
+  const createBtn = document.querySelector('[onclick="createFamily()"]');
+  if (createBtn) {
+    createBtn.onclick = function() {
+      console.log('🟢 Клик по кнопке "Создать семью"');
+      window.createFamily();
+    };
+  }
+  
+  const addBtn = document.querySelector('.add-btn');
+  if (addBtn) {
+    addBtn.onclick = function() {
+      console.log('🟢 Клик по кнопке "Добавить"');
+      window.openAddModal();
+    };
+  }
+});
 
     console.log('🟢 Скрипт загружен полностью');
   </script>
