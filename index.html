@@ -1641,7 +1641,7 @@
     const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
     const TMDB_LANG = 'ru-RU';
 
-    // === РАСКРЫТИЕ НА ВЕСЬ ЭКРАН ===
+    // === Telegram WebApp ===
     const tg = window.Telegram?.WebApp;
     const user = tg?.initDataUnsafe?.user;
     const userId = String(user?.id || 'test_' + Date.now());
@@ -1650,7 +1650,7 @@
 
     if (tg) {
       tg.ready();
-      tg.expand(); // ← ВАЖНО!
+      tg.expand();
       try { tg.requestFullscreen?.(); } catch(e) {}
       try { tg.disableVerticalSwipes?.(); } catch(e) {}
       try {
@@ -1842,7 +1842,49 @@
       }
     }
 
+    // ============ ФУНКЦИИ, ВИДИМЫЕ ГЛОБАЛЬНО ============
+
+    window.createFamily = async function() {
+      console.log('🟢 createFamily() вызвана');
+      try {
+        const familyName = prompt('Введите название вашей семьи (например: Семья Ивановых):');
+        if (!familyName) {
+          console.log('🔴 Название не введено');
+          return;
+        }
+        
+        const code = generateInviteCode();
+        const familyId = 'family_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+        
+        await set(ref(db, `families/${familyId}`), {
+          name: familyName,
+          createdBy: userId,
+          createdAt: Date.now(),
+          inviteCode: code,
+          members: {
+            [userId]: {
+              role: 'admin',
+              joinedAt: Date.now()
+            }
+          }
+        });
+        
+        await update(ref(db, `users/${userId}`), {
+          familyId: familyId,
+          role: 'admin',
+          name: userName
+        });
+        
+        showToast(`✅ Семья создана! Код: ${code}`, 'success');
+        location.reload();
+      } catch (error) {
+        console.error('❌ Ошибка createFamily:', error);
+        showToast('❌ Ошибка: ' + error.message, 'error');
+      }
+    };
+
     window.joinFamilyByCode = async function() {
+      console.log('🟢 joinFamilyByCode() вызвана');
       try {
         const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
         if (!code) {
@@ -1896,54 +1938,10 @@
         showToast('🎉 Вы присоединились к семье!', 'success');
         location.reload();
       } catch (error) {
-        console.error('Ошибка присоединения к семье:', error);
-        showToast('❌ Ошибка. Проверьте консоль.', 'error');
+        console.error('❌ Ошибка joinFamilyByCode:', error);
+        showToast('❌ Ошибка: ' + error.message, 'error');
       }
     };
-
-    window.createFamily = async function() {
-      try {
-        const familyName = prompt('Введите название вашей семьи (например: Семья Ивановых):');
-        if (!familyName) return;
-        
-        const code = generateInviteCode();
-        const familyId = 'family_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
-        
-        await set(ref(db, `families/${familyId}`), {
-          name: familyName,
-          createdBy: userId,
-          createdAt: Date.now(),
-          inviteCode: code,
-          members: {
-            [userId]: {
-              role: 'admin',
-              joinedAt: Date.now()
-            }
-          }
-        });
-        
-        await update(ref(db, `users/${userId}`), {
-          familyId: familyId,
-          role: 'admin',
-          name: userName
-        });
-        
-        showToast(`✅ Семья создана! Код: ${code}`, 'success');
-        location.reload();
-      } catch (error) {
-        console.error('Ошибка создания семьи:', error);
-        showToast('❌ Ошибка. Проверьте консоль.', 'error');
-      }
-    };
-
-    function generateInviteCode() {
-      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      const numbers = '0123456789';
-      let code = '';
-      for (let i = 0; i < 4; i++) code += letters[Math.floor(Math.random() * 26)];
-      for (let i = 0; i < 4; i++) code += numbers[Math.floor(Math.random() * 10)];
-      return code;
-    }
 
     window.openFamilySettings = function() {
       if (currentUserRole !== 'admin') {
@@ -2066,18 +2064,32 @@
       if (e.target.id === 'family-modal') closeFamilyModal();
     });
 
+    function generateInviteCode() {
+      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const numbers = '0123456789';
+      let code = '';
+      for (let i = 0; i < 4; i++) code += letters[Math.floor(Math.random() * 26)];
+      for (let i = 0; i < 4; i++) code += numbers[Math.floor(Math.random() * 10)];
+      return code;
+    }
+
     // ============ ЗАГРУЗКА ДАННЫХ ============
+
+    // Загружаем семью пользователя
     let familyLoaded = false;
     try {
       familyLoaded = await loadUserFamily();
+      console.log('🟢 familyLoaded:', familyLoaded);
     } catch (error) {
-      console.error('Ошибка при загрузке семьи:', error);
+      console.error('❌ Ошибка при загрузке семьи:', error);
     }
 
     if (!familyLoaded) {
       document.getElementById('family-entry').style.display = 'flex';
       document.getElementById('onboarding').style.display = 'none';
+      console.log('🟢 Показан экран входа в семью');
     } else {
+      console.log('🟢 Загружаем задачи для семьи:', currentFamilyId);
       const tasksRef = query(
         ref(db, 'tasks'),
         orderByChild('familyId'),
@@ -2100,6 +2112,7 @@
           const t = tasks.find(x => x.id === currentDetailId);
           if (t) renderDetail(t);
         }
+        console.log('🟢 Задачи загружены, количество:', tasks.length);
       });
     }
 
@@ -3371,20 +3384,40 @@
     if (tasksLoaded && !localStorage.getItem('onboarding_seen') && currentFamilyId) {
       setTimeout(showOnboarding, 500);
     }
-    // === ФИКС: Enter/Done на поле ввода кода ===
-const inviteInput = document.getElementById('invite-code-input');
-if (inviteInput) {
-  inviteInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === 'Done') {
-      e.preventDefault();
-      document.getElementById('join-family-btn').click();
-    }
-  });
-}
 
-// === ФИКС: если вдруг есть поле для названия семьи (в будущем) ===
-// (сейчас createFamily вызывается через prompt, поэтому не требуется)
+    // === ПРИНУДИТЕЛЬНАЯ ПРИВЯЗКА КНОПОК (гарантирует работу) ===
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🟢 DOMContentLoaded — привязываем кнопки');
+      
+      const joinBtn = document.getElementById('join-family-btn');
+      if (joinBtn) {
+        joinBtn.onclick = function(e) {
+          e.preventDefault();
+          console.log('🟢 Клик по кнопке "Присоединиться"');
+          window.joinFamilyByCode();
+        };
+      }
+      
+      const createBtn = document.querySelector('[onclick="createFamily()"]');
+      if (createBtn) {
+        createBtn.onclick = function(e) {
+          e.preventDefault();
+          console.log('🟢 Клик по кнопке "Создать семью"');
+          window.createFamily();
+        };
+      }
+      
+      const addBtn = document.querySelector('.add-btn');
+      if (addBtn) {
+        addBtn.onclick = function(e) {
+          e.preventDefault();
+          console.log('🟢 Клик по кнопке "Добавить"');
+          window.openAddModal();
+        };
+      }
+    });
+
+    console.log('🟢 Скрипт загружен полностью');
   </script>
-
 </body>
 </html>
