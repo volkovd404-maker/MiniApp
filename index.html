@@ -905,7 +905,19 @@
 
     const tg = window.Telegram?.WebApp;
     const user = tg?.initDataUnsafe?.user;
-    const userId = String(user?.id || 'test_' + Date.now());
+
+    // ВАЖНО: Если Telegram не даёт user, используем фиксированный ID для тестов
+    // В реальном приложении этот ID должен быть стабильным (например, из localStorage)
+    let userId = String(user?.id);
+    if (!userId || userId === 'undefined' || userId === 'null') {
+      // Используем сохранённый ID из localStorage, если есть, иначе генерируем новый
+      userId = localStorage.getItem('userId') || 'test_user_' + Date.now();
+      localStorage.setItem('userId', userId);
+      console.log('⚠️ Telegram user не найден, используем тестовый ID:', userId);
+    } else {
+      console.log('✅ Telegram user найден, ID:', userId);
+    }
+
     const userName = user?.first_name || (user?.username ? '@' + user.username : 'Гость');
     const userPhoto = user?.photo_url || null;
 
@@ -1033,10 +1045,18 @@
           familyId: familyId,
           role: 'admin'
         });
+        
+        // Вместо reload() обновляем состояние в памяти
         currentFamilyId = familyId;
         currentUserRole = 'admin';
+        
+        // Скрываем экран входа
         document.getElementById('family-entry').style.display = 'none';
+        
         showToast('🎉 Семья создана! Код: ' + inviteCode, 'success');
+        
+        // Загружаем задачи для новой семьи (перезагружаем страницу без потери ID)
+        // Но чтобы не терять задачи, используем location.reload() с сохранением ID
         location.reload();
       } catch (error) {
         console.error('Ошибка создания семьи:', error);
@@ -1050,26 +1070,37 @@
         showToast('Введите код-приглашение', 'error');
         return;
       }
+
       try {
+        console.log('🔍 Ищем семью с кодом:', code);
         const snapshot = await firebase.database().ref('families').orderByChild('inviteCode').equalTo(code).once('value');
         const data = snapshot.val();
+        console.log('📦 Результат поиска:', data);
+        
         if (!data) {
           showToast('❌ Семья с таким кодом не найдена', 'error');
           return;
         }
+
         const familyId = Object.keys(data)[0];
+        console.log('✅ Семья найдена, ID:', familyId);
+        
         await firebase.database().ref(`families/${familyId}/members/${userId}`).set({
           name: userName,
           role: 'member',
           joinedAt: Date.now()
         });
+
         await firebase.database().ref(`users/${userId}`).update({
           familyId: familyId,
           role: 'member'
         });
+
         currentFamilyId = familyId;
         document.getElementById('family-entry').style.display = 'none';
         showToast('✅ Вы присоединились к семье!', 'success');
+        
+        // Перезагружаем для загрузки задач
         location.reload();
       } catch (error) {
         console.error('Ошибка присоединения к семье:', error);
@@ -2275,6 +2306,8 @@
     }
 
     console.log('🟢 Приложение полностью загружено и готово к работе');
+    console.log('👤 Текущий userId:', userId);
+    console.log('🏠 currentFamilyId:', currentFamilyId);
   </script>
 </body>
 </html>
