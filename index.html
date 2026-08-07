@@ -991,11 +991,16 @@
 
     async function loadUserFamily() {
       try {
+        console.log('🔍 Загружаем семью для пользователя:', userId);
         const snapshot = await firebase.database().ref(`users/${userId}`).once('value');
         const userData = snapshot.val();
+        console.log('📦 Данные пользователя:', userData);
+        
         if (userData && userData.familyId) {
           currentFamilyId = userData.familyId;
           currentUserRole = userData.role || 'member';
+          console.log('✅ Семья найдена:', currentFamilyId, 'Роль:', currentUserRole);
+          
           const familySnapshot = await firebase.database().ref(`families/${currentFamilyId}`).once('value');
           const familyData = familySnapshot.val();
           if (familyData && familyData.members) {
@@ -1003,37 +1008,12 @@
           }
           return true;
         }
+        console.log('❌ Семья не найдена');
         return false;
       } catch (error) {
         console.error('Ошибка загрузки семьи:', error);
         return false;
       }
-    }
-
-    // ФУНКЦИЯ СБРОСА СЕМЬИ (для тестирования)
-    async function resetFamily() {
-      if (!currentFamilyId) {
-        showToast('У вас нет семьи для сброса', 'error');
-        return;
-      }
-      const msg = 'Вы уверены, что хотите сбросить семью? Все данные семьи будут удалены!';
-      const doIt = async () => {
-        try {
-          await firebase.database().ref(`families/${currentFamilyId}`).remove();
-          await firebase.database().ref(`users/${userId}`).update({
-            familyId: null,
-            role: null
-          });
-          closeFamilyModal();
-          showToast('🔄 Семья сброшена. Перезагрузите страницу.', 'success');
-          location.reload();
-        } catch (error) {
-          console.error('Ошибка сброса:', error);
-          showToast('❌ Ошибка сброса семьи', 'error');
-        }
-      };
-      if (tg?.showConfirm) tg.showConfirm(msg, (ok) => { if (ok) doIt(); });
-      else if (confirm(msg)) doIt();
     }
 
     async function createFamily() {
@@ -1097,6 +1077,31 @@
       }
     }
 
+    async function resetFamily() {
+      if (!currentFamilyId) {
+        showToast('У вас нет семьи для сброса', 'error');
+        return;
+      }
+      const msg = 'Вы уверены, что хотите сбросить семью? Все данные семьи будут удалены!';
+      const doIt = async () => {
+        try {
+          await firebase.database().ref(`families/${currentFamilyId}`).remove();
+          await firebase.database().ref(`users/${userId}`).update({
+            familyId: null,
+            role: null
+          });
+          closeFamilyModal();
+          showToast('🔄 Семья сброшена. Перезагрузите страницу.', 'success');
+          location.reload();
+        } catch (error) {
+          console.error('Ошибка сброса:', error);
+          showToast('❌ Ошибка сброса семьи', 'error');
+        }
+      };
+      if (tg?.showConfirm) tg.showConfirm(msg, (ok) => { if (ok) doIt(); });
+      else if (confirm(msg)) doIt();
+    }
+
     // ================================================================
     // 4. ЗАГРУЗКА ДАННЫХ
     // ================================================================
@@ -1114,13 +1119,16 @@
 
     (async () => {
       const familyLoaded = await loadUserFamily();
+      console.log('📌 familyLoaded:', familyLoaded);
 
       if (!familyLoaded) {
+        console.log('🚫 Показываем экран входа в семью');
         document.getElementById('family-entry').style.display = 'flex';
         document.getElementById('onboarding').style.display = 'none';
         return;
       }
 
+      console.log('✅ Семья загружена, загружаем задачи...');
       const tasksRef = firebase.database().ref('tasks')
         .orderByChild('familyId')
         .equalTo(currentFamilyId);
