@@ -8,13 +8,13 @@
   <!-- Telegram WebApp -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <!-- Подключение Firebase (совместимые версии, без import/export) -->
+  <!-- Подключение Firebase (совместимые версии) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
     /* ============================================================
-       Цветовая палитра в стиле Frame.io (тёмная, строгая)
+       Цветовая палитра (тёмная, строгая)
        ============================================================ */
     :root {
       --brand: #00A3FF;
@@ -2533,7 +2533,6 @@
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;position:relative;z-index:1;">
             <button class="today-notify-btn" onclick="event.stopPropagation(); notifyGroup('${task.id}')">📋 Скопировать</button>
-            <button class="today-notify-btn" style="background:var(--accent-purple);" onclick="event.stopPropagation(); notifyGroupViaBot('${task.id}')">🤖 Бот в группу</button>
             ${currentUserRole === 'admin' ? `<button class="today-notify-btn" style="background:var(--card-alt); color:var(--text); border:1px solid var(--border);" onclick="event.stopPropagation(); openFamilySettings()">⚙️ Семья</button>` : ''}
           </div>
         </div>
@@ -2772,23 +2771,6 @@
         if (tg?.showAlert) tg.showAlert('Скопируйте текст:\n\n' + text);
         else alert('Скопируйте текст:\n\n' + text);
       }
-    }
-
-    // Напомнить через бота
-    function notifyGroupViaBot(taskId) {
-      const task = tasks.find(t => t.id === taskId);
-      if (!task) return;
-      const text = `🎬 Фильм этих выходных\n\n${task.title}\n` +
-        (task.why ? `💡 ${task.why}\n` : '') +
-        `👍 Голосов: ${task.votes}\n` +
-        `📅 В работе: ${task.createdAt ? Math.floor((Date.now() - task.createdAt) / (1000 * 60 * 60 * 24)) : 0} дн.\n` +
-        `Автор: ${task.author}` +
-        (task.link ? `\n\n🔗 ${task.link}` : '');
-      const botUsername = 'FamilyEveningBot'; // замените на вашего бота
-      const url = `https://t.me/${botUsername}?text=${encodeURIComponent(text)}`;
-      haptic('success');
-      if (tg?.openLink) tg.openLink(url);
-      else window.open(url, '_blank');
     }
 
     // Открыть детали
@@ -3075,226 +3057,92 @@
       closeEditModal();
     }
 
-    // Обработчики кликов по модалкам
-    document.getElementById('edit-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'edit-modal') closeEditModal();
-    });
-    document.getElementById('detail-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'detail-modal') closeDetailAnimated();
-    });
+    // ================================================================
+    // 11. МОДАЛКА УПРАВЛЕНИЯ СЕМЬЁЙ
+    // ================================================================
 
-    // Умный Enter в полях
-    function setupSmartEnter() {
-      const fields = [document.getElementById('task-input'), document.getElementById('task-why'), document.getElementById('task-link')].filter(Boolean);
-      fields.forEach((field, index) => {
-        field.addEventListener('keydown', (e) => {
-          if (field.tagName === 'TEXTAREA' && e.shiftKey && e.key === 'Enter') return;
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            const isLast = index === fields.length - 1;
-            if (isLast) field.blur();
-            else fields[index + 1].focus();
-          }
-        });
+    function closeFamilyModal() {
+      document.getElementById('family-modal').classList.remove('active');
+    }
+
+    function openFamilySettings() {
+      const content = document.getElementById('family-content');
+      const membersList = Object.entries(familyMembers).map(([id, member]) => {
+        const isYou = id === userId;
+        const isAdmin = member.role === 'admin';
+        return `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:10px;">
+              ${makeAvatarHtml(member.name, id, null, 28)}
+              <span style="font-weight:500;">${escapeHtml(member.name)}${isYou ? ' (вы)' : ''}</span>
+              ${isAdmin ? '<span style="font-size:10px;background:var(--brand-light);color:var(--brand);padding:2px 8px;border-radius:6px;font-weight:600;">Админ</span>' : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const familyData = firebase.database().ref(`families/${currentFamilyId}`).once('value');
+      familyData.then(snapshot => {
+        const data = snapshot.val();
+        const inviteCode = data?.inviteCode || '—';
+
+        content.innerHTML = `
+          <h2>⚙️ Управление семьёй</h2>
+          <div style="margin-bottom:20px;display:flex;flex-direction:column;gap:8px;">
+            <div style="background:var(--card-alt);padding:14px;border-radius:12px;">
+              <div style="font-size:12px;color:var(--hint);">Код приглашения</div>
+              <div style="font-size:20px;font-weight:700;color:var(--brand);">${inviteCode}</div>
+              <button onclick="copyInviteCode('${inviteCode}')" style="margin-top:8px;background:var(--card);color:var(--text);border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;">📋 Скопировать</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom:20px;">
+            <div style="font-size:12px;color:var(--hint);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Участники (${Object.keys(familyMembers).length})</div>
+            ${membersList}
+          </div>
+
+          <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeFamilyModal()">Закрыть</button>
+            <button class="btn-delete" onclick="leaveFamily()">🚪 Выйти из семьи</button>
+          </div>
+        `;
+        document.getElementById('family-modal').classList.add('active');
       });
     }
-    setupSmartEnter();
 
-    // Автопоиск по TMDB при вводе названия
-    document.getElementById('task-input').addEventListener('input', () => {
-      clearTimeout(titleDebounce);
-      const title = document.getElementById('task-input').value.trim();
-      const linkUrl = document.getElementById('task-link').value.trim();
-      if (linkUrl && parseTmdbUrl(linkUrl)) return;
-      if (title.length < 2) {
-        if (lastSearchedTitle && !linkUrl) {
-          currentPreview = null;
-          renderLinkPreview(null);
-        }
-        lastSearchedTitle = '';
-        return;
+    function copyInviteCode(code) {
+      try {
+        navigator.clipboard.writeText(code);
+        showToast('📋 Код скопирован!', 'success');
+      } catch (e) {
+        if (tg?.showAlert) tg.showAlert('Код: ' + code);
+        else alert('Код: ' + code);
       }
-      titleDebounce = setTimeout(async () => {
-        if (title === lastSearchedTitle) return;
-        lastSearchedTitle = title;
-        showPreviewLoading('Ищем на TMDB...');
-        const tmdbResult = await searchTmdbByTitle(title);
-        if (document.getElementById('task-input').value.trim() !== title) return;
-        if (tmdbResult) {
-          currentPreview = tmdbResult;
-          renderLinkPreview(tmdbResult);
-        } else {
-          const linkNow = document.getElementById('task-link').value.trim();
-          if (linkNow) handleLinkInput();
-          else {
-            currentPreview = null;
-            renderLinkPreview(null);
-          }
+    }
+
+    function leaveFamily() {
+      const msg = 'Вы уверены, что хотите выйти из семьи? Все ваши данные останутся, но вы перестанете видеть общие фильмы.';
+      const doIt = async () => {
+        try {
+          await firebase.database().ref(`families/${currentFamilyId}/members/${userId}`).remove();
+          await firebase.database().ref(`users/${userId}`).update({
+            familyId: null,
+            role: null
+          });
+          closeFamilyModal();
+          showToast('👋 Вы вышли из семьи', 'success');
+          location.reload();
+        } catch (error) {
+          console.error('Ошибка выхода:', error);
+          showToast('❌ Ошибка выхода', 'error');
         }
-      }, 700);
-    });
-
-    document.getElementById('task-link').addEventListener('input', handleLinkInput);
-    document.getElementById('task-link').addEventListener('paste', () => setTimeout(handleLinkInput, 50));
-
-    // Обработка кнопки "Назад" в Telegram
-    if (tg?.BackButton) {
-      tg.BackButton.onClick(() => {
-        if (document.getElementById('edit-modal').classList.contains('active')) closeEditModal();
-        else if (document.getElementById('detail-modal').classList.contains('active')) closeDetailAnimated();
-        else if (document.getElementById('family-modal').classList.contains('active')) closeFamilyModal();
-      });
-      const observer = new MutationObserver(() => {
-        const anyOpen =
-          document.getElementById('edit-modal').classList.contains('active') ||
-          document.getElementById('detail-modal').classList.contains('active') ||
-          document.getElementById('family-modal').classList.contains('active');
-        if (anyOpen) tg.BackButton.show();
-        else tg.BackButton.hide();
-      });
-      observer.observe(document.getElementById('edit-modal'), { attributes: true });
-      observer.observe(document.getElementById('detail-modal'), { attributes: true });
-      observer.observe(document.getElementById('family-modal'), { attributes: true });
+      };
+      if (tg?.showConfirm) tg.showConfirm(msg, (ok) => { if (ok) doIt(); });
+      else if (confirm(msg)) doIt();
     }
 
     // ================================================================
-    // 11. ОНБОРДИНГ (показывается один раз)
-    // ================================================================
-    let currentStory = 0;
-    let storyTimer = null;
-    let storySwipeStartX = 0;
-    let storySwipeStartY = 0;
-    let isStorySwiping = false;
-
-    function showOnboarding() {
-      const onboarding = document.getElementById('onboarding');
-      if (!onboarding) return;
-      if (localStorage.getItem('onboarding_seen') === 'true') {
-        onboarding.style.display = 'none';
-        return;
-      }
-      const statEl = document.getElementById('onboarding-month-stats');
-      if (statEl) {
-        const doneThisMonth = tasks.filter(t => {
-          if (!t.done) return false;
-          const doneTime = t.doneAt || t.createdAt || 0;
-          const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
-          return doneTime >= monthStart;
-        }).length;
-        statEl.textContent = doneThisMonth;
-      }
-      onboarding.style.display = 'block';
-      goToStory(0);
-      startStoryTimer();
-      const swipeArea = document.getElementById('swipe-area');
-      swipeArea.addEventListener('touchstart', onStoryTouchStart, { passive: true });
-      swipeArea.addEventListener('touchmove', onStoryTouchMove, { passive: true });
-      swipeArea.addEventListener('touchend', onStoryTouchEnd, { passive: true });
-      swipeArea.addEventListener('click', (e) => {
-        const rect = swipeArea.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        if (x < rect.width * 0.3) prevStory();
-        else if (x > rect.width * 0.7) nextStory();
-      });
-    }
-
-    function goToStory(index) {
-      const slides = document.getElementById('slides');
-      const segments = document.querySelectorAll('.progress-segment');
-      const startBtn = document.getElementById('onboarding-start-btn');
-      currentStory = Math.max(0, Math.min(index, 2));
-      slides.style.transform = `translateX(-${currentStory * 33.333}%)`;
-      segments.forEach((seg, i) => {
-        seg.classList.remove('active', 'done');
-        if (i < currentStory) seg.classList.add('done');
-        else if (i === currentStory) seg.classList.add('active');
-      });
-      if (currentStory === 2) {
-        startBtn.style.display = 'block';
-      } else {
-        startBtn.style.display = 'none';
-      }
-    }
-
-    function nextStory() {
-      stopStoryTimer();
-      if (currentStory < 2) {
-        goToStory(currentStory + 1);
-        startStoryTimer();
-      }
-    }
-
-    function prevStory() {
-      stopStoryTimer();
-      if (currentStory > 0) {
-        goToStory(currentStory - 1);
-        startStoryTimer();
-      }
-    }
-
-    function startStoryTimer() {
-      stopStoryTimer();
-      storyTimer = setTimeout(() => {
-        if (currentStory < 2) {
-          nextStory();
-        } else {
-          stopStoryTimer();
-        }
-      }, 4000);
-    }
-
-    function stopStoryTimer() {
-      if (storyTimer) {
-        clearTimeout(storyTimer);
-        storyTimer = null;
-      }
-    }
-
-    function onStoryTouchStart(e) {
-      const touch = e.touches[0];
-      storySwipeStartX = touch.clientX;
-      storySwipeStartY = touch.clientY;
-      isStorySwiping = true;
-      stopStoryTimer();
-    }
-
-    function onStoryTouchMove(e) {
-      if (!isStorySwiping) return;
-      const touch = e.touches[0];
-      const diffX = touch.clientX - storySwipeStartX;
-      const diffY = touch.clientY - storySwipeStartY;
-      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 20) {
-        const offset = -currentStory * 33.333 + (diffX / window.innerWidth) * 20;
-        document.getElementById('slides').style.transform = `translateX(${offset}%)`;
-        document.getElementById('slides').style.transition = 'none';
-      }
-    }
-
-    function onStoryTouchEnd(e) {
-      if (!isStorySwiping) return;
-      isStorySwiping = false;
-      const slides = document.getElementById('slides');
-      slides.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
-      const diffX = e.changedTouches[0].clientX - storySwipeStartX;
-      if (Math.abs(diffX) > 80) {
-        if (diffX < 0) nextStory();
-        else prevStory();
-      } else {
-        goToStory(currentStory);
-      }
-      startStoryTimer();
-    }
-
-    function closeOnboarding() {
-      localStorage.setItem('onboarding_seen', 'true');
-      const onboarding = document.getElementById('onboarding');
-      onboarding.style.display = 'none';
-      stopStoryTimer();
-      if (window.haptic) haptic('success');
-    }
-
-    // ================================================================
-    // 12. ОБРАБОТЧИКИ КНОПОК СЕМЬИ (добавлено!)
+    // 12. ОБРАБОТЧИКИ КНОПОК СЕМЬИ
     // ================================================================
 
     document.getElementById('create-family-btn').addEventListener('click', createFamily);
@@ -3321,6 +3169,11 @@
 
     // Кнопка "Начать" онбординга
     document.getElementById('onboarding-start-btn').addEventListener('click', closeOnboarding);
+
+    // Обработчик клика по модалке семьи (закрытие по клику вне контента)
+    document.getElementById('family-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'family-modal') closeFamilyModal();
+    });
 
     console.log('🟢 Приложение полностью загружено и готово к работе');
   </script>
