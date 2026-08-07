@@ -886,9 +886,6 @@
 
   <div id="toast" class="toast"></div>
 
-  <!-- ============================================================
-  JAVASCRIPT (ПОЛНОСТЬЮ ПЕРЕПИСАН)
-  ============================================================ -->
   <script>
     // ================================================================
     // 1. ИНИЦИАЛИЗАЦИЯ
@@ -919,7 +916,6 @@
       try { tg.disableVerticalSwipes?.(); } catch (e) {}
       try { tg.setHeaderColor('#0B0D0F'); } catch (e) {}
       try { tg.setBackgroundColor('#0B0D0F'); } catch (e) {}
-      console.log('🟢 Telegram WebApp активирован');
     }
 
     // ================================================================
@@ -983,7 +979,6 @@
     let currentFamilyId = null;
     let currentUserRole = 'member';
     let familyMembers = {};
-    let familyLoaded = false;
 
     function generateInviteCode() {
       const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -1013,6 +1008,32 @@
         console.error('Ошибка загрузки семьи:', error);
         return false;
       }
+    }
+
+    // ФУНКЦИЯ СБРОСА СЕМЬИ (для тестирования)
+    async function resetFamily() {
+      if (!currentFamilyId) {
+        showToast('У вас нет семьи для сброса', 'error');
+        return;
+      }
+      const msg = 'Вы уверены, что хотите сбросить семью? Все данные семьи будут удалены!';
+      const doIt = async () => {
+        try {
+          await firebase.database().ref(`families/${currentFamilyId}`).remove();
+          await firebase.database().ref(`users/${userId}`).update({
+            familyId: null,
+            role: null
+          });
+          closeFamilyModal();
+          showToast('🔄 Семья сброшена. Перезагрузите страницу.', 'success');
+          location.reload();
+        } catch (error) {
+          console.error('Ошибка сброса:', error);
+          showToast('❌ Ошибка сброса семьи', 'error');
+        }
+      };
+      if (tg?.showConfirm) tg.showConfirm(msg, (ok) => { if (ok) doIt(); });
+      else if (confirm(msg)) doIt();
     }
 
     async function createFamily() {
@@ -1077,7 +1098,7 @@
     }
 
     // ================================================================
-    // 4. ЗАГРУЗКА ДАННЫХ (ГЛАВНЫЙ ПОТОК)
+    // 4. ЗАГРУЗКА ДАННЫХ
     // ================================================================
     let tasks = [];
     let tasksLoaded = false;
@@ -1092,17 +1113,14 @@
     let isTmdbSearchActive = false;
 
     (async () => {
-      // ШАГ 1: Загружаем семью
-      familyLoaded = await loadUserFamily();
+      const familyLoaded = await loadUserFamily();
 
-      // ШАГ 2: Если семьи нет — показываем экран входа
       if (!familyLoaded) {
         document.getElementById('family-entry').style.display = 'flex';
         document.getElementById('onboarding').style.display = 'none';
-        return; // останавливаемся, не грузим задачи
+        return;
       }
 
-      // ШАГ 3: Если семья есть — грузим задачи
       const tasksRef = firebase.database().ref('tasks')
         .orderByChild('familyId')
         .equalTo(currentFamilyId);
@@ -1125,14 +1143,13 @@
         }
       });
 
-      // ШАГ 4: Показываем онбординг (если не видел)
       if (!localStorage.getItem('onboarding_seen')) {
         setTimeout(showOnboarding, 500);
       }
     })();
 
     // ================================================================
-    // 5. TMDB И ПРЕВЬЮ
+    // 5. TMDB
     // ================================================================
     const TMDB_API_KEY = 'd5806ec3adbcd850c1fe8109b15e9f2f';
     const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
@@ -1378,7 +1395,7 @@
     }
 
     // ================================================================
-    // 6. ОТРИСОВКА UI
+    // 6. ОТРИСОВКА
     // ================================================================
     function getFiltered() {
       let list = [...tasks];
@@ -1497,7 +1514,7 @@
           <div class="today-meta"><span>📅 ${ageText}</span><span>•</span><span>👍 ${task.votes}</span></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;position:relative;z-index:1;">
             <button class="today-notify-btn" onclick="event.stopPropagation(); notifyGroup('${task.id}')">📋 Скопировать</button>
-            ${currentUserRole === 'admin' ? `<button class="today-notify-btn" style="background:var(--card-alt); color:var(--text); border:1px solid var(--border);" onclick="event.stopPropagation(); openFamilySettings()">⚙️ Семья</button>` : ''}
+            <button class="today-notify-btn" style="background:var(--card-alt); color:var(--text); border:1px solid var(--border);" onclick="event.stopPropagation(); openFamilySettings()">⚙️ Семья</button>
           </div>
         </div>
       `;
@@ -2019,6 +2036,7 @@
 
           <div class="modal-buttons">
             <button class="btn-cancel" onclick="closeFamilyModal()">Закрыть</button>
+            <button class="btn-delete" onclick="resetFamily()">🔄 Сбросить семью</button>
             <button class="btn-delete" onclick="leaveFamily()">🚪 Выйти из семьи</button>
           </div>
         `;
@@ -2075,7 +2093,6 @@
       if (e.target.id === 'family-modal') closeFamilyModal();
     });
 
-    // Переключатель категорий в модалке (исправлено!)
     document.querySelectorAll('.category-option').forEach(btn => {
       btn.addEventListener('click', () => {
         selectCategory(btn.dataset.value);
