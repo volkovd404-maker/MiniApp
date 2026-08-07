@@ -1959,6 +1959,7 @@
     let previewDebounce = null;
     let titleDebounce = null;
     let lastSearchedTitle = '';
+    let isTmdbSearchActive = false;
 
     let currentFamilyId = null;
     let currentUserRole = 'member';
@@ -2311,8 +2312,8 @@
 
       if (!url) {
         const title = document.getElementById('task-input').value.trim();
-        if (title.length >= 2) {
-          lastSearchedTitle = '';
+        if (title.length >= 2 && !isTmdbSearchActive) {
+          // Если ссылка пустая, но есть название — запускаем поиск по названию
           document.getElementById('task-input').dispatchEvent(new Event('input'));
         } else {
           currentPreview = null;
@@ -3174,6 +3175,217 @@
     document.getElementById('family-modal').addEventListener('click', (e) => {
       if (e.target.id === 'family-modal') closeFamilyModal();
     });
+
+    // ================================================================
+    // 14. TMDB ПОИСК ПО НАЗВАНИЮ (ИСПРАВЛЕНО)
+    // ================================================================
+
+    document.getElementById('task-input').addEventListener('input', () => {
+      clearTimeout(titleDebounce);
+      const title = document.getElementById('task-input').value.trim();
+      const linkUrl = document.getElementById('task-link').value.trim();
+
+      // Если есть ссылка и она TMDB — не ищем по названию
+      if (linkUrl && parseTmdbUrl(linkUrl)) return;
+
+      // Если название слишком короткое — сбрасываем
+      if (title.length < 2) {
+        if (lastSearchedTitle && !linkUrl) {
+          currentPreview = null;
+          renderLinkPreview(null);
+        }
+        lastSearchedTitle = '';
+        isTmdbSearchActive = false;
+        return;
+      }
+
+      isTmdbSearchActive = true;
+      titleDebounce = setTimeout(async () => {
+        if (title === lastSearchedTitle) {
+          isTmdbSearchActive = false;
+          return;
+        }
+        lastSearchedTitle = title;
+
+        showPreviewLoading('Ищем на TMDB...');
+        const tmdbResult = await searchTmdbByTitle(title);
+
+        // Проверяем, не изменилось ли поле ввода
+        if (document.getElementById('task-input').value.trim() !== title) {
+          isTmdbSearchActive = false;
+          return;
+        }
+
+        if (tmdbResult) {
+          currentPreview = tmdbResult;
+          renderLinkPreview(tmdbResult);
+        } else {
+          const linkNow = document.getElementById('task-link').value.trim();
+          if (linkNow) {
+            handleLinkInput();
+          } else {
+            currentPreview = null;
+            renderLinkPreview(null);
+          }
+        }
+        isTmdbSearchActive = false;
+      }, 700);
+    });
+
+    // Обработка ссылки
+    document.getElementById('task-link').addEventListener('input', handleLinkInput);
+    document.getElementById('task-link').addEventListener('paste', () => setTimeout(handleLinkInput, 50));
+
+    // Обработка кнопки "Назад" в Telegram
+    if (tg?.BackButton) {
+      tg.BackButton.onClick(() => {
+        if (document.getElementById('edit-modal').classList.contains('active')) closeEditModal();
+        else if (document.getElementById('detail-modal').classList.contains('active')) closeDetailAnimated();
+        else if (document.getElementById('family-modal').classList.contains('active')) closeFamilyModal();
+      });
+      const observer = new MutationObserver(() => {
+        const anyOpen =
+          document.getElementById('edit-modal').classList.contains('active') ||
+          document.getElementById('detail-modal').classList.contains('active') ||
+          document.getElementById('family-modal').classList.contains('active');
+        if (anyOpen) tg.BackButton.show();
+        else tg.BackButton.hide();
+      });
+      observer.observe(document.getElementById('edit-modal'), { attributes: true });
+      observer.observe(document.getElementById('detail-modal'), { attributes: true });
+      observer.observe(document.getElementById('family-modal'), { attributes: true });
+    }
+
+    // ================================================================
+    // 15. ОНБОРДИНГ (показывается только один раз)
+    // ================================================================
+    let currentStory = 0;
+    let storyTimer = null;
+    let storySwipeStartX = 0;
+    let storySwipeStartY = 0;
+    let isStorySwiping = false;
+
+    function showOnboarding() {
+      const onboarding = document.getElementById('onboarding');
+      if (!onboarding) return;
+      if (localStorage.getItem('onboarding_seen') === 'true') {
+        onboarding.style.display = 'none';
+        return;
+      }
+      onboarding.style.display = 'block';
+      goToStory(0);
+      startStoryTimer();
+      const swipeArea = document.getElementById('swipe-area');
+      swipeArea.addEventListener('touchstart', onStoryTouchStart, { passive: true });
+      swipeArea.addEventListener('touchmove', onStoryTouchMove, { passive: true });
+      swipeArea.addEventListener('touchend', onStoryTouchEnd, { passive: true });
+      swipeArea.addEventListener('click', (e) => {
+        const rect = swipeArea.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        if (x < rect.width * 0.3) prevStory();
+        else if (x > rect.width * 0.7) nextStory();
+      });
+    }
+
+    function goToStory(index) {
+      const slides = document.getElementById('slides');
+      const segments = document.querySelectorAll('.progress-segment');
+      const startBtn = document.getElementById('onboarding-start-btn');
+      currentStory = Math.max(0, Math.min(index, 2));
+      slides.style.transform = `translateX(-${currentStory * 33.333}%)`;
+      segments.forEach((seg, i) => {
+        seg.classList.remove('active', 'done');
+        if (i < currentStory) seg.classList.add('done');
+        else if (i === currentStory) seg.classList.add('active');
+      });
+      if (currentStory === 2) {
+        startBtn.style.display = 'block';
+      } else {
+        startBtn.style.display = 'none';
+      }
+    }
+
+    function nextStory() {
+      stopStoryTimer();
+      if (currentStory < 2) {
+        goToStory(currentStory + 1);
+        startStoryTimer();
+      }
+    }
+
+    function prevStory() {
+      stopStoryTimer();
+      if (currentStory > 0) {
+        goToStory(currentStory - 1);
+        startStoryTimer();
+      }
+    }
+
+    function startStoryTimer() {
+      stopStoryTimer();
+      storyTimer = setTimeout(() => {
+        if (currentStory < 2) {
+          nextStory();
+        } else {
+          stopStoryTimer();
+        }
+      }, 4000);
+    }
+
+    function stopStoryTimer() {
+      if (storyTimer) {
+        clearTimeout(storyTimer);
+        storyTimer = null;
+      }
+    }
+
+    function onStoryTouchStart(e) {
+      const touch = e.touches[0];
+      storySwipeStartX = touch.clientX;
+      storySwipeStartY = touch.clientY;
+      isStorySwiping = true;
+      stopStoryTimer();
+    }
+
+    function onStoryTouchMove(e) {
+      if (!isStorySwiping) return;
+      const touch = e.touches[0];
+      const diffX = touch.clientX - storySwipeStartX;
+      const diffY = touch.clientY - storySwipeStartY;
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 20) {
+        const offset = -currentStory * 33.333 + (diffX / window.innerWidth) * 20;
+        document.getElementById('slides').style.transform = `translateX(${offset}%)`;
+        document.getElementById('slides').style.transition = 'none';
+      }
+    }
+
+    function onStoryTouchEnd(e) {
+      if (!isStorySwiping) return;
+      isStorySwiping = false;
+      const slides = document.getElementById('slides');
+      slides.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+      const diffX = e.changedTouches[0].clientX - storySwipeStartX;
+      if (Math.abs(diffX) > 80) {
+        if (diffX < 0) nextStory();
+        else prevStory();
+      } else {
+        goToStory(currentStory);
+      }
+      startStoryTimer();
+    }
+
+    function closeOnboarding() {
+      localStorage.setItem('onboarding_seen', 'true');
+      const onboarding = document.getElementById('onboarding');
+      onboarding.style.display = 'none';
+      stopStoryTimer();
+      if (window.haptic) haptic('success');
+    }
+
+    // Запуск онбординга после загрузки данных
+    if (tasksLoaded && !localStorage.getItem('onboarding_seen') && currentFamilyId) {
+      setTimeout(showOnboarding, 500);
+    }
 
     console.log('🟢 Приложение полностью загружено и готово к работе');
   </script>
