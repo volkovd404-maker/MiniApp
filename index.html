@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Семейный вечер</title>
 
-  <!-- Telegram WebApp -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <!-- Firebase (совместимая версия) -->
+  <!-- Firebase compat (работает без import/export) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -23,7 +22,6 @@
       --accent-pink: #FF3B30;
       --accent-purple: #7C5CFF;
       --accent-red: #FF3B30;
-
       --bg-start: #0B0D0F;
       --bg-end: #15171A;
       --card: #1A1C1E;
@@ -32,10 +30,9 @@
       --text-soft: #C0C4CC;
       --hint: #8A8F99;
       --border: #2A2D30;
-
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
-      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.6);
-      --shadow-lg: 0 12px 40px rgba(0, 163, 255, 0.15);
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.5);
+      --shadow-md: 0 8px 24px rgba(0,0,0,0.6);
+      --shadow-lg: 0 12px 40px rgba(0,163,255,0.15);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -74,7 +71,7 @@
       display: flex; align-items: center; justify-content: center;
       color: white; font-weight: 600; font-size: 12px;
       background-size: cover; background-position: center;
-      flex-shrink: 0; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
 
     .user-name {
@@ -175,7 +172,7 @@
       white-space: nowrap; box-shadow: var(--shadow-sm); transition: all 0.2s;
     }
     .filter:active { transform: scale(0.96); }
-    .filter.active { background: var(--brand); color: white; border-color: var(--brand); box-shadow: 0 4px 12px rgba(0, 163, 255, 0.25); }
+    .filter.active { background: var(--brand); color: white; border-color: var(--brand); box-shadow: 0 4px 12px rgba(0,163,255,0.25); }
 
     .tasks { display: flex; flex-direction: column; gap: 12px; }
 
@@ -246,7 +243,7 @@
       transition: all 0.2s; margin-left: 4px;
     }
     .check:active { transform: scale(0.9); }
-    .check.done { background: var(--accent-mint); border-color: var(--accent-mint); box-shadow: 0 2px 8px rgba(0, 200, 83, 0.3); }
+    .check.done { background: var(--accent-mint); border-color: var(--accent-mint); box-shadow: 0 2px 8px rgba(0,200,83,0.3); }
 
     .task-thumb { width: 52px; height: 52px; min-width: 52px; border-radius: 8px; background: var(--card-alt) center/cover no-repeat; flex-shrink: 0; border: 1px solid var(--border); }
     .task-body { flex: 1; min-width: 0; }
@@ -262,9 +259,9 @@
       background: var(--brand-light); color: var(--brand); padding: 2px 8px;
       border-radius: 6px; font-weight: 500; font-size: 11px;
     }
-    .badge-category-mine { background: rgba(124, 92, 255, 0.15); color: var(--accent-purple); }
-    .badge-veto { background: rgba(255, 59, 48, 0.15); color: var(--accent-red); }
-    .badge-tmdb { background: rgba(0, 163, 255, 0.15); color: var(--brand); }
+    .badge-category-mine { background: rgba(124,92,255,0.15); color: var(--accent-purple); }
+    .badge-veto { background: rgba(255,59,48,0.15); color: var(--accent-red); }
+    .badge-tmdb { background: rgba(0,163,255,0.15); color: var(--brand); }
     .badge-author { font-weight: 500; }
 
     .vote {
@@ -275,7 +272,7 @@
       transition: all 0.15s;
     }
     .vote:active { transform: scale(0.94); }
-    .vote.voted { background: var(--brand); color: white; border-color: var(--brand); box-shadow: 0 4px 12px rgba(0, 163, 255, 0.25); }
+    .vote.voted { background: var(--brand); color: white; border-color: var(--brand); box-shadow: 0 4px 12px rgba(0,163,255,0.25); }
     .vote-count { font-weight: 700; font-size: 16px; margin-top: 1px; line-height: 1; }
     .vote-emoji { font-size: 14px; line-height: 1; }
 
@@ -293,7 +290,7 @@
 
     .modal {
       display: none; position: fixed; inset: 0;
-      background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
       align-items: flex-end; justify-content: center; z-index: 100;
       height: 100vh; height: 100dvh; height: var(--tg-viewport-height, 100dvh);
     }
@@ -306,7 +303,7 @@
       padding: 28px 22px calc(40px + env(safe-area-inset-bottom, 0px));
       max-width: 500px; width: 100%; min-height: 60vh; max-height: 100%;
       overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
-      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1);
       position: relative; touch-action: pan-y; scroll-padding-bottom: 120px;
       border-top: 1px solid var(--border);
     }
@@ -342,7 +339,7 @@
     .link-preview-error { padding: 12px 14px; font-size: 12px; color: var(--hint); }
 
     .tmdb-card { display: flex; gap: 12px; padding: 12px; background: var(--card-alt); color: var(--text); border-bottom: 1px solid var(--border); }
-    .tmdb-poster { width: 90px; height: 135px; min-width: 90px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+    .tmdb-poster { width: 90px; height: 135px; min-width: 90px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     .tmdb-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
     .tmdb-type { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--brand); padding: 2px 8px; border-radius: 6px; align-self: flex-start; background: var(--brand-light); }
     .tmdb-title { font-size: 15px; font-weight: 700; line-height: 1.2; margin-top: 2px; color: var(--text); }
@@ -356,7 +353,7 @@
     .tmdb-detail-backdrop { height: 140px; background-size: cover; background-position: center; position: relative; }
     .tmdb-detail-backdrop::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 0%, var(--card-alt) 100%); }
     .tmdb-detail-content { display: flex; gap: 14px; padding: 16px; margin-top: -50px; position: relative; z-index: 1; }
-    .tmdb-detail-poster { width: 100px; height: 150px; min-width: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4); }
+    .tmdb-detail-poster { width: 100px; height: 150px; min-width: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.4); }
     .tmdb-detail-info { flex: 1; min-width: 0; padding-top: 50px; display: flex; flex-direction: column; gap: 6px; }
     .tmdb-detail-type { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: var(--brand-light); color: var(--brand); padding: 3px 10px; border-radius: 6px; align-self: flex-start; }
     .tmdb-detail-title { font-size: 18px; font-weight: 700; line-height: 1.2; margin-top: 4px; color: var(--text); }
@@ -371,7 +368,7 @@
     .category-switch { display: flex; gap: 8px; margin-bottom: 16px; background: var(--card-alt); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
     .category-option { flex: 1; padding: 12px; border: none; background: transparent; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--text-soft); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .category-option:active { transform: scale(0.97); }
-    .category-option.active { background: var(--card); color: var(--text); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); }
+    .category-option.active { background: var(--card); color: var(--text); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
     .category-option.active[data-value="active"] { color: var(--brand); }
     .category-option.active[data-value="mine"] { color: var(--accent-purple); }
     .category-desc { font-size: 12px; color: var(--hint); margin: -8px 0 16px; padding: 0 4px; }
@@ -380,11 +377,11 @@
     .modal-buttons button { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
     .modal-buttons button:active { transform: scale(0.97); }
     .btn-cancel { background: var(--card-alt); color: var(--text); border: 1px solid var(--border); }
-    .btn-save { background: var(--brand); color: white; box-shadow: 0 4px 12px rgba(0, 163, 255, 0.25); }
-    .btn-delete { background: var(--accent-red); color: white; box-shadow: 0 4px 12px rgba(255, 59, 48, 0.25); }
-    .btn-veto { background: var(--accent-red); color: white; box-shadow: 0 4px 12px rgba(255, 59, 48, 0.25); }
+    .btn-save { background: var(--brand); color: white; box-shadow: 0 4px 12px rgba(0,163,255,0.25); }
+    .btn-delete { background: var(--accent-red); color: white; box-shadow: 0 4px 12px rgba(255,59,48,0.25); }
+    .btn-veto { background: var(--accent-red); color: white; box-shadow: 0 4px 12px rgba(255,59,48,0.25); }
     .btn-unveto { background: var(--card-alt); color: var(--text); border: 1px solid var(--border); }
-    .btn-done-big { width: 100%; padding: 16px; border-radius: 12px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; background: var(--accent-mint); color: white; box-shadow: 0 4px 14px rgba(0, 200, 83, 0.3); transition: transform 0.15s; margin-top: 10px; }
+    .btn-done-big { width: 100%; padding: 16px; border-radius: 12px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; background: var(--accent-mint); color: white; box-shadow: 0 4px 14px rgba(0,200,83,0.3); transition: transform 0.15s; margin-top: 10px; }
     .btn-done-big.reopen { background: var(--card-alt); color: var(--text); border: 1px solid var(--border); box-shadow: none; }
     .btn-done-big:active { transform: scale(0.98); }
 
@@ -395,8 +392,8 @@
     .detail-votes-info { font-size: 14px; }
     .detail-votes-count { font-size: 28px; font-weight: 700; line-height: 1; color: var(--brand); }
     .detail-votes-label { font-size: 12px; color: var(--hint); margin-top: 4px; font-weight: 500; }
-    .vote-big { padding: 12px 22px; border-radius: 12px; background: var(--brand); color: white; border: none; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 163, 255, 0.25); transition: background 0.2s; }
-    .vote-big.voted { background: var(--accent-mint); box-shadow: 0 4px 12px rgba(0, 200, 83, 0.3); }
+    .vote-big { padding: 12px 22px; border-radius: 12px; background: var(--brand); color: white; border: none; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(0,163,255,0.25); transition: background 0.2s; }
+    .vote-big.voted { background: var(--accent-mint); box-shadow: 0 4px 12px rgba(0,200,83,0.3); }
     .vote-big:active { transform: scale(0.96); }
     .detail-section { margin-bottom: 16px; padding: 16px 18px; background: var(--card); border-radius: 14px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
     .detail-section-title { font-size: 12px; font-weight: 600; color: var(--hint); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
@@ -416,8 +413,8 @@
       left: 50%; transform: translateX(-50%) translateY(-150px);
       background: var(--card-alt); color: var(--text); padding: 14px 20px;
       border-radius: 12px; font-size: 14px; font-weight: 600;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); z-index: 1000;
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 1000;
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease;
       max-width: 90%; opacity: 0; pointer-events: none; visibility: hidden;
       border: 1px solid var(--border);
     }
@@ -434,9 +431,7 @@
 </head>
 <body>
 
-  <!-- ============================================================
-  ОНБОРДИНГ
-  ============================================================ -->
+  <!-- Онбординг -->
   <div id="onboarding" style="display:none; position:fixed; inset:0; z-index:9999; background:#0B0D0F; color:#F0F2F5;">
     <div id="story-container" style="position:relative; width:100%; height:100dvh; overflow:hidden;">
       <div id="progress-bar" style="position:absolute; top:20px; left:20px; right:20px; display:flex; gap:6px; z-index:10;">
@@ -467,9 +462,7 @@
     </div>
   </div>
 
-  <!-- ============================================================
-  ЭКРАН ВХОДА В СЕМЬЮ
-  ============================================================ -->
+  <!-- Экран входа в семью -->
   <div id="family-entry" style="display:none; position:fixed; inset:0; z-index:9998; background:#0B0D0F; color:#F0F2F5; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;">
     <div style="max-width:400px; width:100%; text-align:center;">
       <div style="font-size:48px; margin-bottom:20px;">🏠</div>
@@ -481,9 +474,7 @@
     </div>
   </div>
 
-  <!-- ============================================================
-  ОСНОВНОЕ ПРИЛОЖЕНИЕ
-  ============================================================ -->
+  <!-- Основное приложение -->
   <div class="container">
     <header>
       <h1>🍿 Семейный вечер</h1>
@@ -532,9 +523,7 @@
     Что смотрим?
   </button>
 
-  <!-- ============================================================
-  МОДАЛЬНЫЕ ОКНА
-  ============================================================ -->
+  <!-- Модальные окна -->
   <div id="edit-modal" class="modal">
     <div class="modal-content">
       <h2 id="edit-title">✨ Что смотрим</h2>
@@ -569,10 +558,10 @@
 
   <div id="toast" class="toast"></div>
 
-  <!-- ============================================================
-  JAVASCRIPT
-  ============================================================ -->
   <script>
+    // ============================================================
+    // 1. ИНИЦИАЛИЗАЦИЯ FIREBASE
+    // ============================================================
     const firebaseConfig = {
       apiKey: "AIzaSyAyQfQD8aRxLKhEtIcq4QzKjCLmJgQXlVc",
       authDomain: "miniappvolkov.firebaseapp.com",
@@ -586,10 +575,11 @@
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const TMDB_API_KEY = 'd5806ec3adbcd850c1fe8109b15e9f2f';
-    const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
-    const TMDB_LANG = 'ru-RU';
+    console.log('🟢 Firebase инициализирован');
 
+    // ============================================================
+    // 2. TELEGRAM WEBAPP
+    // ============================================================
     const tg = window.Telegram?.WebApp;
     const user = tg?.initDataUnsafe?.user;
     const userId = String(user?.id || 'test_' + Date.now());
@@ -603,8 +593,12 @@
       try { tg.disableVerticalSwipes?.(); } catch (e) {}
       try { tg.setHeaderColor('#0B0D0F'); } catch (e) {}
       try { tg.setBackgroundColor('#0B0D0F'); } catch (e) {}
+      console.log('🟢 Telegram WebApp активирован');
     }
 
+    // ============================================================
+    // 3. УТИЛИТЫ
+    // ============================================================
     function haptic(type = 'light') {
       try {
         if (type === 'success') tg?.HapticFeedback?.notificationOccurred('success');
@@ -657,6 +651,9 @@
     }
     setupAvatar();
 
+    // ============================================================
+    // 4. ПЕРЕМЕННЫЕ
+    // ============================================================
     let tasks = [];
     let tasksLoaded = false;
     let currentFilter = 'active';
@@ -672,16 +669,20 @@
     let currentUserRole = 'member';
     let familyMembers = {};
 
+    // ============================================================
+    // 5. СЕМЕЙНАЯ ЛОГИКА (совместимая с compat)
+    // ============================================================
+
     async function loadUserFamily() {
       try {
         const userRef = firebase.database().ref(db, `users/${userId}`);
-        const snapshot = await get(userRef);
+        const snapshot = await userRef.once('value');
         const userData = snapshot.val();
         if (userData && userData.familyId) {
           currentFamilyId = userData.familyId;
           currentUserRole = userData.role || 'member';
           const familyRef = firebase.database().ref(db, `families/${currentFamilyId}`);
-          const familySnapshot = await get(familyRef);
+          const familySnapshot = await familyRef.once('value');
           const familyData = familySnapshot.val();
           if (familyData && familyData.members) {
             familyMembers = familyData.members;
@@ -716,6 +717,13 @@
         return url.protocol === 'http:' || url.protocol === 'https:';
       } catch { return false; }
     }
+
+    // ============================================================
+    // 6. TMDB И ПРЕВЬЮ
+    // ============================================================
+    const TMDB_API_KEY = 'd5806ec3adbcd850c1fe8109b15e9f2f';
+    const TMDB_IMG_BASE = 'https://image.tmdb.org/t/p/w500';
+    const TMDB_LANG = 'ru-RU';
 
     function parseTmdbUrl(url) {
       try {
@@ -967,6 +975,10 @@
       }, 800);
     }
 
+    // ============================================================
+    // 7. ОСНОВНАЯ ЗАГРУЗКА
+    // ============================================================
+
     let familyLoaded = false;
     try {
       familyLoaded = await loadUserFamily();
@@ -978,13 +990,11 @@
       document.getElementById('family-entry').style.display = 'flex';
       document.getElementById('onboarding').style.display = 'none';
     } else {
-      const tasksRef = firebase.database().query(
-        firebase.database().ref(db, 'tasks'),
-        firebase.database().orderByChild('familyId'),
-        firebase.database().equalTo(currentFamilyId)
-      );
+      const tasksRef = firebase.database().ref(db, 'tasks')
+        .orderByChild('familyId')
+        .equalTo(currentFamilyId);
 
-      firebase.database().onValue(tasksRef, (snapshot) => {
+      tasksRef.on('value', (snapshot) => {
         const data = snapshot.val() || {};
         tasks = Object.entries(data).map(([id, task]) => ({
           id,
@@ -1002,6 +1012,10 @@
         }
       });
     }
+
+    // ============================================================
+    // 8. ОТРИСОВКА UI
+    // ============================================================
 
     function getFiltered() {
       let list = [...tasks];
@@ -1275,24 +1289,23 @@
       });
     }
 
-    // ================================================================
-    // ПУБЛИЧНЫЕ ФУНКЦИИ (ГЛОБАЛЬНО ДОСТУПНЫЕ)
-    // ================================================================
+    // ============================================================
+    // 9. ПУБЛИЧНЫЕ ФУНКЦИИ
+    // ============================================================
 
     window.createFamily = async function() {
-      console.log('🟢 createFamily() вызвана');
       const familyName = prompt('Введите название вашей семьи:');
       if (!familyName) return;
       const code = generateInviteCode();
       const familyId = 'family_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
-      await firebase.database().set(firebase.database().ref(db, `families/${familyId}`), {
+      await firebase.database().ref(db, `families/${familyId}`).set({
         name: familyName,
         createdBy: userId,
         createdAt: Date.now(),
         inviteCode: code,
         members: { [userId]: { role: 'admin', joinedAt: Date.now() } }
       });
-      await firebase.database().update(firebase.database().ref(db, `users/${userId}`), {
+      await firebase.database().ref(db, `users/${userId}`).update({
         familyId: familyId,
         role: 'admin',
         name: userName
@@ -1308,7 +1321,7 @@
         return;
       }
       const familiesRef = firebase.database().ref(db, 'families');
-      const snapshot = await firebase.database().get(familiesRef);
+      const snapshot = await familiesRef.once('value');
       const families = snapshot.val() || {};
       let foundFamilyId = null;
       for (const [familyId, family] of Object.entries(families)) {
@@ -1322,7 +1335,7 @@
         return;
       }
       const familyRef = firebase.database().ref(db, `families/${foundFamilyId}`);
-      const familySnapshot = await firebase.database().get(familyRef);
+      const familySnapshot = await familyRef.once('value');
       const familyData = familySnapshot.val();
       if (familyData.banned && familyData.banned[userId]) {
         showToast('⛔ Вы исключены из этой семьи', 'error');
@@ -1331,9 +1344,9 @@
       const members = familyData.members || {};
       if (!members[userId]) {
         members[userId] = { role: 'member', joinedAt: Date.now() };
-        await firebase.database().update(familyRef, { members });
+        await familyRef.update({ members });
       }
-      await firebase.database().update(firebase.database().ref(db, `users/${userId}`), {
+      await firebase.database().ref(db, `users/${userId}`).update({
         familyId: foundFamilyId,
         role: 'member',
         name: userName
@@ -1369,14 +1382,14 @@
       if (voters[userId]) delete voters[userId];
       else voters[userId] = true;
       haptic('light');
-      await firebase.database().update(firebase.database().ref(db, `tasks/${id}`), { voters });
+      await firebase.database().ref(db, `tasks/${id}`).update({ voters });
     };
 
     window.toggleDone = async function(id) {
       const task = tasks.find(t => t.id === id);
       if (!task) return;
       haptic('success');
-      await firebase.database().update(firebase.database().ref(db, `tasks/${id}`), {
+      await firebase.database().ref(db, `tasks/${id}`).update({
         done: !task.done,
         doneBy: !task.done ? userName : null,
         doneById: !task.done ? userId : null,
@@ -1391,7 +1404,7 @@
       const confirmMsg = newState ? `Наложить вето на фильм «${task.title}»?` : `Снять вето с фильма «${task.title}»?`;
       const doIt = async () => {
         haptic('success');
-        await firebase.database().update(firebase.database().ref(db, `tasks/${id}`), {
+        await firebase.database().ref(db, `tasks/${id}`).update({
           vetoed: newState,
           vetoedBy: newState ? userName : null,
           vetoedById: newState ? userId : null,
@@ -1609,7 +1622,7 @@
       if (!task) return;
       const msg = 'Удалить фильм «' + task.title + '»?';
       const doIt = async () => {
-        await firebase.database().remove(firebase.database().ref(db, `tasks/${id}`));
+        await firebase.database().ref(db, `tasks/${id}`).remove();
         closeDetailAnimated();
         haptic('success');
         showToast('🗑 Фильм удален');
@@ -1695,7 +1708,7 @@
         tmdbTagline: currentPreview.tmdbTagline || null
       } : null;
       if (editingTaskId) {
-        await firebase.database().update(firebase.database().ref(db, `tasks/${editingTaskId}`), {
+        await firebase.database().ref(db, `tasks/${editingTaskId}`).update({
           title, why, link,
           category: selectedCategory,
           preview: previewData,
@@ -1703,7 +1716,7 @@
         });
         showToast('✅ Изменения сохранены', 'success');
       } else {
-        await firebase.database().push(firebase.database().ref(db, 'tasks'), {
+        await firebase.database().ref(db, 'tasks').push({
           title, why, link,
           category: selectedCategory,
           preview: previewData,
@@ -1800,6 +1813,9 @@
       observer.observe(document.getElementById('family-modal'), { attributes: true });
     }
 
+    // ============================================================
+    // 10. ОНБОРДИНГ
+    // ============================================================
     let currentStory = 0;
     let storyTimer = null;
     let storySwipeStartX = 0;
